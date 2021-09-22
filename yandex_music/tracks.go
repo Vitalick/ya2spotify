@@ -6,6 +6,7 @@ import (
 )
 
 type TrackArtist struct {
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -22,6 +23,7 @@ func ArtistsToStrings(a []TrackArtist) []string {
 }
 
 type TrackAlbum struct {
+	ID      int           `json:"id"`
 	Title   string        `json:"title"`
 	Artists []TrackArtist `json:"artists"`
 }
@@ -31,6 +33,7 @@ func (a *TrackAlbum) String() string {
 }
 
 type SingleTrackEntries struct {
+	ID      string        `json:"id"`
 	Title   string        `json:"title"`
 	Version string        `json:"version"`
 	Artists []TrackArtist `json:"artists"`
@@ -38,5 +41,9 @@ type SingleTrackEntries struct {
 }
 
 func (t *SingleTrackEntries) String() string {
-	return fmt.Sprintf("%s - %s", strings.Join(ArtistsToStrings(t.Artists), ", "), t.Title)
+	outString := fmt.Sprintf("%s - %s", strings.Join(ArtistsToStrings(t.Artists), ", "), t.Title)
+	if len(t.Version) > 0 {
+		outString += fmt.Sprintf("%s (%s)", outString, t.Version)
+	}
+	return outString
 }

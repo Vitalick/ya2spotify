@@ -2,9 +2,11 @@ package yandex_music
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 )
 
@@ -26,6 +28,33 @@ func NewPlaylist(owner string, playlistId int64) *Playlist {
 		[]SingleTrackEntries{},
 		&yandexPlaylistData{},
 	}
+}
+
+func NewPlaylistFromLink(playlistLink string) (*Playlist, error) {
+	var owner string
+	var playlistId int64
+	if len(playlistLink) > 0 {
+		re := regexp.MustCompile("/+")
+		splitUrl := re.Split(playlistLink, -1)
+		playlistsIndex := len(splitUrl)
+		for i, urlPart := range splitUrl {
+			if urlPart == "playlists" {
+				playlistsIndex = i
+				break
+			}
+		}
+		if playlistsIndex < len(splitUrl)-1 {
+			owner = splitUrl[playlistsIndex-1]
+			var err error
+			playlistId, err = strconv.ParseInt(splitUrl[playlistsIndex+1], 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			return NewPlaylist(owner, playlistId), nil
+		}
+		return nil, errors.New("invalid link")
+	}
+	return nil, nil
 }
 
 func (p *Playlist) PlaylistUrl() string {
@@ -58,6 +87,8 @@ func (p *Playlist) GetPlaylistInfo() error {
 		return err
 	}
 	p.yandexPlaylist.imported = true
+	p.Title = p.yandexPlaylist.Playlist.Title
+	p.Description = p.yandexPlaylist.Playlist.Description
 	return nil
 }
 
