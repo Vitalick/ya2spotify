@@ -11,7 +11,7 @@ func main() {
 		"neumoin.vitaly",
 		1018,
 	)
-	if err := playlistData.DataTrackEntries(); err != nil {
+	if err := playlistData.GetTracks(); err != nil {
 		log.Fatalln(err)
 	}
 	for i, track := range playlistData.Tracks {

@@ -13,6 +13,7 @@ type yandexPlaylistData struct {
 		Description string   `json:"description"`
 		TrackIds    []string `json:"trackIds"`
 	} `json:"playlist"`
+	imported bool
 }
 
 type postDataTrackEntries struct {

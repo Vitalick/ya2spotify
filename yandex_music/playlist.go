@@ -46,7 +46,7 @@ func (p *Playlist) PlaylistUrl() string {
 	return playlistApi()
 }
 
-func (p *Playlist) playlistInfo() error {
+func (p *Playlist) GetPlaylistInfo() error {
 	resp, err := http.Get(p.PlaylistUrl())
 	if err != nil {
 		return err
@@ -57,16 +57,27 @@ func (p *Playlist) playlistInfo() error {
 	if err := resp.Body.Close(); err != nil {
 		return err
 	}
+	p.yandexPlaylist.imported = true
 	return nil
 }
 
-func (p *Playlist) DataTrackEntries() error {
-	if err := p.playlistInfo(); err != nil {
-		return err
+func (p *Playlist) getTracks(bypassUpdatePlaylist bool) error {
+	if !p.yandexPlaylist.imported || bypassUpdatePlaylist {
+		if err := p.GetPlaylistInfo(); err != nil {
+			return err
+		}
 	}
 	tracks, err := p.yandexPlaylist.TrackEntries()
 	if tracks != nil {
 		p.Tracks = tracks
 	}
 	return err
+}
+
+func (p *Playlist) GetTracks() error {
+	return p.getTracks(false)
+}
+
+func (p *Playlist) GetAllBypass() error {
+	return p.getTracks(true)
 }
