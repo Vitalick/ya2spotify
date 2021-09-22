@@ -36,7 +36,7 @@ func (y *yandexPlaylistData) dataTrackEntries() *postDataTrackEntries {
 	}
 }
 
-func (y *yandexPlaylistData) TrackEntries() ([]SingleTrackEntries, error) {
+func (y *yandexPlaylistData) TrackEntries() ([]SingleTrack, error) {
 	json_data, err := json.Marshal(*y.dataTrackEntries())
 
 	if err != nil {
@@ -47,7 +47,7 @@ func (y *yandexPlaylistData) TrackEntries() ([]SingleTrackEntries, error) {
 		return nil, err
 	}
 
-	var res []SingleTrackEntries
+	var res []SingleTrack
 
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return nil, err

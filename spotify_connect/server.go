@@ -11,11 +11,12 @@ import (
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"net/http"
+	"strings"
 	"time"
 	"yandexToSpotify/yandex_music"
 )
 
-type yandexSpotifyTrackIdMap map[string]string
+type yandexSpotifyTrackIdMap map[string]spotify.FullTrack
 
 type server struct {
 	router        *mux.Router
@@ -43,12 +44,29 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		spotifyClient: &spotify.Client{},
 		currentUser:   &spotify.PrivateUser{},
 		savedPlaylist: nil,
-		yandexSpotify: yandexSpotifyTrackIdMap{},
+		yandexSpotify: make(yandexSpotifyTrackIdMap),
 	}
 
 	s.configureRouter()
 
 	return s
+}
+
+func (s *server) searchInSpotify(yt *yandex_music.SingleTrack, ctx context.Context) {
+	if len(s.currentUser.ID) == 0 {
+		return
+	}
+	for _, artist := range yt.Artists {
+		res, err := s.spotifyClient.Search(ctx, strings.Join([]string{yt.Title, artist.String()}, " "), spotify.SearchTypeTrack, spotify.Limit(10))
+		if err != nil {
+			continue
+		}
+		if tracks := res.Tracks.Tracks; len(tracks) > 0 {
+			s.yandexSpotify[yt.ID] = tracks[0]
+			return
+		}
+	}
+	s.yandexSpotify[yt.ID] = spotify.FullTrack{SimpleTrack: spotify.SimpleTrack{ID: "nil"}}
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -187,8 +205,13 @@ func (s *server) handleYandexMusic() http.HandlerFunc {
 				for _, track := range s.savedPlaylist.Tracks {
 					page += "<li>"
 					trackString := track.String()
-					if spotifyId := s.yandexSpotify[track.ID]; spotifyId != "" {
-						trackString += fmt.Sprintf(" <a target=\"blank\" href=\"https://open.spotify.com/track/%s\"><b>Spotify link</b></a>", spotifyId)
+					if spotifyTrack := s.yandexSpotify[track.ID]; spotifyTrack.ID != "" {
+						if spotifyTrack.ID == "nil" {
+							trackString += " <b>Not found in Spotify</b>"
+						} else {
+							trackString += fmt.Sprintf(" <a target=\"blank\" href=\"https://open.spotify.com/track/%s\"><b>Spotify link</b></a>", spotifyId)
+						}
+					} else {
 					}
 					page += trackString + "</li>"
 				}

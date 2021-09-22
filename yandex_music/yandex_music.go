@@ -11,11 +11,11 @@ import (
 )
 
 type Playlist struct {
-	Owner          string               `json:"owner"`
-	PlaylistId     int64                `json:"playlist_id"`
-	Title          string               `json:"title"`
-	Description    string               `json:"description"`
-	Tracks         []SingleTrackEntries `json:"tracks"`
+	Owner          string        `json:"owner"`
+	PlaylistId     int64         `json:"playlist_id"`
+	Title          string        `json:"title"`
+	Description    string        `json:"description"`
+	Tracks         []SingleTrack `json:"tracks"`
 	yandexPlaylist *yandexPlaylistData
 }
 
@@ -25,7 +25,7 @@ func NewPlaylist(owner string, playlistId int64) *Playlist {
 		playlistId,
 		"",
 		"",
-		[]SingleTrackEntries{},
+		[]SingleTrack{},
 		&yandexPlaylistData{},
 	}
 }

@@ -32,7 +32,7 @@ func (a *TrackAlbum) String() string {
 	return fmt.Sprintf("%s [%s]", a.Title, strings.Join(ArtistsToStrings(a.Artists), ", "))
 }
 
-type SingleTrackEntries struct {
+type SingleTrack struct {
 	ID      string        `json:"id"`
 	Title   string        `json:"title"`
 	Version string        `json:"version"`
@@ -40,7 +40,7 @@ type SingleTrackEntries struct {
 	Albums  []TrackAlbum  `json:"albums"`
 }
 
-func (t *SingleTrackEntries) String() string {
+func (t *SingleTrack) String() string {
 	outString := fmt.Sprintf("%s - %s", strings.Join(ArtistsToStrings(t.Artists), ", "), t.Title)
 	if len(t.Version) > 0 {
 		outString += fmt.Sprintf("%s (%s)", outString, t.Version)
