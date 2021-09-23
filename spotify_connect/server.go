@@ -89,6 +89,18 @@ func (s *server) quantityOfTracks() *tracksQuantity {
 	return &tracksQuantity{tracksQuantityYandex, tracksFoundedSpotify, tracksNotFoundedSpotify}
 }
 
+func (s *server) foundedTracks() []spotify.FullTrack {
+	var foundedTracks []spotify.FullTrack
+	for _, track := range s.savedPlaylist.Tracks {
+		s.mMap.Lock()
+		if spotifyTrack := s.yandexSpotify[track.ID]; spotifyTrack.ID != "" && spotifyTrack.ID != "nil" {
+			foundedTracks = append(foundedTracks, spotifyTrack)
+		}
+		s.mMap.Unlock()
+	}
+	return foundedTracks
+}
+
 func (s *server) getTrack() *yandex_music.SingleTrack {
 	s.mCounter.Lock()
 	defer s.mCounter.Unlock()
@@ -367,7 +379,42 @@ func (s *server) handleYandexMusic() http.HandlerFunc {
 func (s *server) handleCreatePlaylist() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		page := s.getYandexList()
-		s.respond(w, r, http.StatusOK, page)
+		page += "<form method=\"get\">"
+		page += "<label>New playlist name: </label>"
+		page += fmt.Sprintf("<input type=\"text\" name=\"playlist_name\" value=\"%s\" required>",
+			s.savedPlaylist.Title,
+		)
+		page += "<label>New playlist description: </label>"
+		page += fmt.Sprintf("<input type=\"text\" name=\"playlist_description\" value=\"{}\">",
+			s.savedPlaylist.Description,
+		)
+		page += "<button type=\"submit\">Create</button>"
+		page += "</form>"
+		page += "<p><a href=\"/\">Home</a></p>"
+		defer s.respond(w, r, http.StatusOK, page)
+		playlistName := r.URL.Query().Get("playlist_name")
+		playlistDescription := r.URL.Query().Get("playlist_description")
+		if playlistName == "" {
+			return
+		}
+		s.mClient.Lock()
+		defer s.mClient.Unlock()
+		if s.currentUser.ID == "" {
+			return
+		}
+		playlist, err := s.spotifyClient.CreatePlaylistForUser(context.Background(), s.currentUser.ID, playlistName, playlistDescription, false, false)
+		if err != nil {
+			return
+		}
+		var trackIds []spotify.ID
+		for _, foundedTrack := range s.foundedTracks() {
+			trackIds = append(trackIds, foundedTrack.ID)
+		}
+		_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
+		if err != nil {
+			return
+		}
+		page += "<p>Success create playlist!</p>"
 	}
 }
 
