@@ -394,23 +394,26 @@ func (s *server) handleCreatePlaylist() http.HandlerFunc {
 		page += "</form>"
 		page += "<p><a href=\"/\">Home</a></p>"
 		page += s.getYandexList()
-		defer s.respond(w, r, http.StatusOK, page)
 		s.logger.Infoln(r.URL.Query())
 		playlistName := r.URL.Query().Get("playlist_name")
 		playlistDescription := r.URL.Query().Get("playlist_description")
 		if len(playlistName) == 0 {
-			s.logger.Infof("not playlistName: %s\n", playlistName)
+			s.respond(w, r, http.StatusOK, page)
 			return
 		}
 		s.mClient.Lock()
 		defer s.mClient.Unlock()
 		if s.currentUser.ID == "" {
 			s.logger.Infoln("not user id")
+			page = "<p>Not user id!</p>" + page
+			s.respond(w, r, http.StatusOK, page)
 			return
 		}
 		playlist, err := s.spotifyClient.CreatePlaylistForUser(context.Background(), s.currentUser.ID, playlistName, playlistDescription, false, false)
 		if err != nil {
 			s.logger.Errorln(err)
+			page = fmt.Sprintf("<p>%v</p>", err) + page
+			s.respond(w, r, http.StatusOK, page)
 			return
 		}
 		var trackIds []spotify.ID
@@ -420,9 +423,12 @@ func (s *server) handleCreatePlaylist() http.HandlerFunc {
 		_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
 		if err != nil {
 			s.logger.Errorln(err)
+			page = fmt.Sprintf("<p>%v</p>", err) + page
+			s.respond(w, r, http.StatusOK, page)
 			return
 		}
 		page = "<p>Success create playlist!</p>" + page
+		s.respond(w, r, http.StatusOK, page)
 	}
 }
 
