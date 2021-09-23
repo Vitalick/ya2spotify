@@ -233,7 +233,6 @@ func (s *server) handleCallbackSpotify() http.HandlerFunc {
 			s.error(w, r, http.StatusForbidden, err)
 			return
 		}
-		//logrus.Infof("Token: %s", tok)
 		if st := r.FormValue("state"); st != s.state {
 			s.error(w, r, http.StatusNotFound, err)
 			return
@@ -378,32 +377,45 @@ func (s *server) handleYandexMusic() http.HandlerFunc {
 
 func (s *server) handleCreatePlaylist() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		page := s.getYandexList()
-		page += "<form method=\"get\">"
+		if s.savedPlaylist == nil {
+			http.Redirect(w, r, "/ya_music", http.StatusTemporaryRedirect)
+			return
+		}
+		page := "<form method=\"get\">"
 		page += "<label>New playlist name: </label>"
 		page += fmt.Sprintf("<input type=\"text\" name=\"playlist_name\" value=\"%s\" required>",
 			s.savedPlaylist.Title,
 		)
 		page += "<label>New playlist description: </label>"
-		page += fmt.Sprintf("<input type=\"text\" name=\"playlist_description\" value=\"{}\">",
+		page += fmt.Sprintf("<input type=\"text\" name=\"playlist_description\" value=\"%s\">",
 			s.savedPlaylist.Description,
 		)
 		page += "<button type=\"submit\">Create</button>"
 		page += "</form>"
 		page += "<p><a href=\"/\">Home</a></p>"
+		page += s.getYandexList()
 		defer s.respond(w, r, http.StatusOK, page)
-		playlistName := r.URL.Query().Get("playlist_name")
-		playlistDescription := r.URL.Query().Get("playlist_description")
+		s.logger.Infoln(r.URL.Query())
+		var playlistName, playlistDescription string
+		if len(r.URL.Query()["playlist_name"]) > 0 {
+			playlistName = r.URL.Query()["playlist_name"][0]
+		}
+		if len(r.URL.Query()["playlist_description"]) > 0 {
+			playlistDescription = r.URL.Query()["playlist_description"][0]
+		}
 		if playlistName == "" {
+			s.logger.Infoln("not playlistName")
 			return
 		}
 		s.mClient.Lock()
 		defer s.mClient.Unlock()
 		if s.currentUser.ID == "" {
+			s.logger.Infoln("not user id")
 			return
 		}
 		playlist, err := s.spotifyClient.CreatePlaylistForUser(context.Background(), s.currentUser.ID, playlistName, playlistDescription, false, false)
 		if err != nil {
+			s.logger.Errorln(err)
 			return
 		}
 		var trackIds []spotify.ID
@@ -412,9 +424,10 @@ func (s *server) handleCreatePlaylist() http.HandlerFunc {
 		}
 		_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
 		if err != nil {
+			s.logger.Errorln(err)
 			return
 		}
-		page += "<p>Success create playlist!</p>"
+		page = "<p>Success create playlist!</p>" + page
 	}
 }
 
