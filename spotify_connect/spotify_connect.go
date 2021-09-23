@@ -1,6 +1,7 @@
 package spotify_connect
 
 import (
+	b64 "encoding/base64"
 	"flag"
 	"fmt"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
@@ -24,7 +25,11 @@ func init() {
 	flag.StringVar(&spotifySecret, "secret", "", "spotify secret")
 	if spotifyId+spotifySecret == "" {
 		spotifyId = "329b37a12f1d484ca5a2b85e91ecae83"
-		spotifySecret = "db34bd3da960409daf7144c01b6a4a2b"
+		spotifySecret = "VmpKMGExTnRWbkpPVldoVVlsaFNUMVJYZUV0aU1WRjRWV3h3YTAxRVZrWlZWbEpYV1ZaSmQxZHVVbFZpYmtKSFZGVlZNVk5HVWxsYVJUVlhUVWQwTlZZeFdsTlZNa1pHVFZoU1ZGWkVRVGs9"
+		for i := 0; i < 5; i++ {
+			sDec, _ := b64.StdEncoding.DecodeString(spotifySecret)
+			spotifySecret = string(sDec)
+		}
 	}
 }
 
