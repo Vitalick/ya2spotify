@@ -31,6 +31,7 @@ type server struct {
 	yandexSpotify  yandexSpotifyTrackIdMap
 	mMap           *sync.Mutex
 	mCounter       *sync.Mutex
+	mClient        *sync.Mutex
 	maxThreads     int
 	threadsFinish  []bool
 	nowSearchTrack int
@@ -54,6 +55,7 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		yandexSpotify: make(yandexSpotifyTrackIdMap),
 		mMap:          &sync.Mutex{},
 		mCounter:      &sync.Mutex{},
+		mClient:       &sync.Mutex{},
 		maxThreads:    runtime.NumCPU(),
 	}
 	for i := 0; i < s.maxThreads; i++ {
@@ -74,6 +76,7 @@ func (s *server) quantityOfTracks() *tracksQuantity {
 	tracksFoundedSpotify := 0
 	tracksNotFoundedSpotify := 0
 	for _, track := range s.savedPlaylist.Tracks {
+		s.mMap.Lock()
 		if spotifyTrack := s.yandexSpotify[track.ID]; spotifyTrack.ID != "" {
 			if spotifyTrack.ID == "nil" {
 				tracksNotFoundedSpotify += 1
@@ -81,6 +84,7 @@ func (s *server) quantityOfTracks() *tracksQuantity {
 				tracksFoundedSpotify += 1
 			}
 		}
+		s.mMap.Unlock()
 	}
 	return &tracksQuantity{tracksQuantityYandex, tracksFoundedSpotify, tracksNotFoundedSpotify}
 }
@@ -97,32 +101,35 @@ func (s *server) getTrack() *yandex_music.SingleTrack {
 
 func (s *server) searchTrackInSpotify(yt *yandex_music.SingleTrack) {
 	ctx := context.Background()
-	s.logger.Infof("SEARCH %s\n", yt.String())
+	//s.logger.Infof("SEARCH %s\n", yt.String())
 	if len(s.currentUser.ID) == 0 {
 		return
 	}
 	var foundTrack spotify.FullTrack
 	for _, artist := range yt.Artists {
 		searchString := strings.Join([]string{yt.Title, artist.String()}, " ")
+		s.mClient.Lock()
 		res, err := s.spotifyClient.Search(ctx, searchString, spotify.SearchTypeTrack, spotify.Limit(10))
+		s.mClient.Unlock()
 		if err != nil {
 			s.logger.Error(err)
 			continue
 		}
-		s.logger.Infoln(res)
+		//s.logger.Infoln(res)
 		if tracks := res.Tracks.Tracks; len(tracks) > 0 {
 			foundTrack = tracks[0]
-			s.logger.Infof("FOUND %s [%s]\n", yt.String(), searchString)
+			//s.logger.Infof("FOUND %s [%s]\n", yt.String(), searchString)
 			break
 		}
 	}
 	if len(foundTrack.ID) == 0 {
-		s.logger.Infof("NOT FOUND %s\n", yt.String())
+		//s.logger.Infof("NOT FOUND %s\n", yt.String())
 		foundTrack = spotify.FullTrack{SimpleTrack: spotify.SimpleTrack{ID: "nil"}}
 	}
 	s.mMap.Lock()
 	s.yandexSpotify[yt.ID] = foundTrack
 	s.mMap.Unlock()
+	//time.Sleep(time.Second * 1)
 }
 
 func (s *server) searchTracksInSpotify() {
@@ -141,6 +148,9 @@ func (s *server) searchTracksInSpotify() {
 			for true {
 				track := trackGetter()
 				if track == nil {
+					break
+				}
+				if track.ID == "" {
 					break
 				}
 				s.searchTrackInSpotify(track)
@@ -172,7 +182,7 @@ func (s *server) configureRouter() {
 
 func (s *server) setContentTypeHTML(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "text/html")
+		w.Header().Add("Content-Type", "text/html; charset=utf-8")
 		next.ServeHTTP(w, r)
 	})
 }
@@ -219,39 +229,43 @@ func (s *server) handleCallbackSpotify() http.HandlerFunc {
 
 		// use the token to get an authenticated client
 		client := spotify.New(s.auth.Client(ctx, tok))
+		s.mClient.Lock()
 		s.spotifyClient = client
 		if s.currentUser, err = s.spotifyClient.CurrentUser(ctx); err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
+		s.mClient.Unlock()
 		//s.respond(w, r, http.StatusOK, "Login Completed!")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	}
 }
 
-func (s *server) getHeader(ctx context.Context) string {
+func (s *server) getHeader() string {
 	inLink := "<a href=\"/login\">login</a>"
 	outLink := "<a href=\"/logout\">logout</a>"
 	page := ""
 	if len(s.currentUser.ID) > 0 {
 		page += fmt.Sprintf("User: %s<br/>ID: %s <br/>", s.currentUser.DisplayName, s.currentUser.ID)
-		currentPlay, err := s.spotifyClient.PlayerCurrentlyPlaying(ctx)
-		if err != nil {
-			page += "Error in retrieving now playing!</br>"
-			s.logger.Error(err)
-		} else {
-			if currentPlay.Playing {
-				var artists []string
-				for _, artist := range currentPlay.Item.Artists {
-					artists = append(artists, fmt.Sprintf("<a target=\"_blank_\" href=\"%s\">%s</a>", artist.URI, artist.Name))
-				}
-				trackName := fmt.Sprintf("<a target=\"_blank_\" href=\"%s\">%s</a>", currentPlay.Item.URI, currentPlay.Item.Name)
-				page += fmt.Sprintf("Now playing: %s - %s<br/>", strings.Join(artists, ", "), trackName)
-			} else {
-				page += "Now playing nothing!</br>"
-			}
-
-		}
+		//s.mClient.Lock()
+		//currentPlay, err := s.spotifyClient.PlayerCurrentlyPlaying(ctx)
+		//s.mClient.Unlock()
+		//if err != nil {
+		//	page += "Error in retrieving now playing!</br>"
+		//	s.logger.Error(err)
+		//} else {
+		//	if currentPlay.Playing {
+		//		var artists []string
+		//		for _, artist := range currentPlay.Item.Artists {
+		//			artists = append(artists, fmt.Sprintf("<a target=\"_blank_\" href=\"%s\">%s</a>", artist.URI, artist.Name))
+		//		}
+		//		trackName := fmt.Sprintf("<a target=\"_blank_\" href=\"%s\">%s</a>", currentPlay.Item.URI, currentPlay.Item.Name)
+		//		page += fmt.Sprintf("Now playing: %s - %s<br/>", strings.Join(artists, ", "), trackName)
+		//	} else {
+		//		page += "Now playing nothing!</br>"
+		//	}
+		//
+		//}
 		page += fmt.Sprintf("You can %s", outLink)
 	} else {
 		page += fmt.Sprintf("You can %s", inLink)
@@ -261,8 +275,7 @@ func (s *server) getHeader(ctx context.Context) string {
 
 func (s *server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		page := s.getHeader(ctx)
+		page := s.getHeader()
 		page += "<br/>You can <a href=\"/ya_music\">import</a> playlist from Yandex.Music"
 		s.respond(w, r, http.StatusOK, page)
 	}
@@ -286,14 +299,15 @@ func (s *server) getYandexList() string {
 	for _, track := range s.savedPlaylist.Tracks {
 		tracksList += "<li>"
 		trackString := track.String()
+		s.mMap.Lock()
 		if spotifyTrack := s.yandexSpotify[track.ID]; spotifyTrack.ID != "" {
 			if spotifyTrack.ID == "nil" {
 				trackString += " <b>Not found in Spotify</b>"
 			} else {
 				trackString += fmt.Sprintf(" <a target=\"blank\" href=\"%s\"><b>Spotify link</b></a>", spotifyTrack.URI)
 			}
-		} else {
 		}
+		s.mMap.Unlock()
 		tracksList += trackString + "</li>"
 	}
 	tracksList += "</ol>"
@@ -313,13 +327,12 @@ func (s *server) getYandexList() string {
 		list += fmt.Sprintf("<h5><a href=\"/ya_music/create_playlist\">Add playlist to Spotify</a></h5>")
 	}
 	list += tracksList
-
 	return list
 }
 
 func (s *server) handleYandexMusic() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		page := s.getHeader(r.Context())
+		page := s.getHeader()
 		importUrl := r.URL.Query().Get("import_url")
 		page += `
 <form method="get">
@@ -374,7 +387,9 @@ func (s *server) handleLogin() http.HandlerFunc {
 
 func (s *server) handleLogout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		s.mClient.Lock()
 		s.currentUser, s.spotifyClient = &spotify.PrivateUser{}, &spotify.Client{}
+		s.mClient.Unlock()
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	}
 }
@@ -387,5 +402,5 @@ func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err err
 
 func (s *server) respond(w http.ResponseWriter, _ *http.Request, code int, data string) {
 	w.WriteHeader(code)
-	_, _ = w.Write([]byte(string(EncodeWindows1251([]uint8(data)))))
+	_, _ = w.Write([]byte(data))
 }
