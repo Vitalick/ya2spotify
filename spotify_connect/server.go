@@ -12,6 +12,7 @@ import (
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 	"yandexToSpotify/yandex_music"
 )
@@ -27,6 +28,8 @@ type server struct {
 	currentUser   *spotify.PrivateUser
 	savedPlaylist *yandex_music.Playlist
 	yandexSpotify yandexSpotifyTrackIdMap
+	mMap          *sync.Mutex
+	mCounter      [5]sync.Mutex
 }
 
 const (
@@ -45,6 +48,8 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		currentUser:   &spotify.PrivateUser{},
 		savedPlaylist: nil,
 		yandexSpotify: make(yandexSpotifyTrackIdMap),
+		mMap:          &sync.Mutex{},
+		mCounter:      [5]sync.Mutex{},
 	}
 
 	s.configureRouter()
@@ -52,21 +57,64 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 	return s
 }
 
-func (s *server) searchInSpotify(yt *yandex_music.SingleTrack, ctx context.Context) {
+func (s *server) tracksCount() chan *yandex_music.SingleTrack {
+	ch := make(chan *yandex_music.SingleTrack)
+
+	go func(ch chan *yandex_music.SingleTrack) {
+		if s.savedPlaylist == nil {
+			close(ch)
+			return
+		}
+		for _, yt := range s.savedPlaylist.Tracks {
+			ch <- &yt
+			if s.savedPlaylist == nil {
+				close(ch)
+				return
+			}
+		}
+
+		close(ch)
+	}(ch)
+
+	return ch
+}
+
+func (s *server) searchTrackInSpotify(yt *yandex_music.SingleTrack, ctx context.Context, thread int) {
+	s.mCounter[thread].Lock()
+	defer s.mCounter[thread].Unlock()
 	if len(s.currentUser.ID) == 0 {
 		return
 	}
+	var foundTrack spotify.FullTrack
 	for _, artist := range yt.Artists {
 		res, err := s.spotifyClient.Search(ctx, strings.Join([]string{yt.Title, artist.String()}, " "), spotify.SearchTypeTrack, spotify.Limit(10))
 		if err != nil {
 			continue
 		}
 		if tracks := res.Tracks.Tracks; len(tracks) > 0 {
-			s.yandexSpotify[yt.ID] = tracks[0]
-			return
+			foundTrack = tracks[0]
+			break
 		}
 	}
-	s.yandexSpotify[yt.ID] = spotify.FullTrack{SimpleTrack: spotify.SimpleTrack{ID: "nil"}}
+	foundTrack = spotify.FullTrack{SimpleTrack: spotify.SimpleTrack{ID: "nil"}}
+	s.mMap.Lock()
+	s.yandexSpotify[yt.ID] = foundTrack
+	s.mMap.Unlock()
+}
+
+func (s *server) searchTracksInSpotify(ctx context.Context) {
+	if len(s.currentUser.ID) == 0 {
+		return
+	}
+	maxCount := len(s.mCounter)
+	nowThread := 0
+	for track := range s.tracksCount() {
+		go s.searchTrackInSpotify(track, ctx, nowThread)
+		nowThread += 1
+		if nowThread >= maxCount {
+			nowThread = 0
+		}
+	}
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
