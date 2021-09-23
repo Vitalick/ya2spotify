@@ -133,6 +133,7 @@ func (s *server) configureRouter() {
 	private := s.router.PathPrefix("/ya_music").Subrouter()
 	//private.Use(s.authenticateUser)
 	private.HandleFunc("", s.handleYandexMusic()).Methods(http.MethodGet)
+	private.HandleFunc("/create_playlist", s.handleCreatePlaylist()).Methods(http.MethodGet)
 }
 
 func (s *server) setContentTypeHTML(next http.Handler) http.Handler {
@@ -267,6 +268,12 @@ func (s *server) handleYandexMusic() http.HandlerFunc {
 			}
 		}
 		s.respond(w, r, http.StatusOK, page)
+	}
+}
+
+func (s *server) handleCreatePlaylist() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s.respond(w, r, http.StatusOK, "")
 	}
 }
 
