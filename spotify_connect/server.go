@@ -396,15 +396,10 @@ func (s *server) handleCreatePlaylist() http.HandlerFunc {
 		page += s.getYandexList()
 		defer s.respond(w, r, http.StatusOK, page)
 		s.logger.Infoln(r.URL.Query())
-		var playlistName, playlistDescription string
-		if len(r.URL.Query()["playlist_name"]) > 0 {
-			playlistName = r.URL.Query()["playlist_name"][0]
-		}
-		if len(r.URL.Query()["playlist_description"]) > 0 {
-			playlistDescription = r.URL.Query()["playlist_description"][0]
-		}
-		if playlistName == "" {
-			s.logger.Infoln("not playlistName")
+		playlistName := r.URL.Query().Get("playlist_name")
+		playlistDescription := r.URL.Query().Get("playlist_description")
+		if len(playlistName) == 0 {
+			s.logger.Infof("not playlistName: %s\n", playlistName)
 			return
 		}
 		s.mClient.Lock()
