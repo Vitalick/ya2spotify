@@ -34,6 +34,12 @@ func redirectURL() string {
 
 func Start() error {
 	auth := spotifyauth.New(spotifyauth.WithRedirectURL(redirectURL()), spotifyauth.WithScopes(
+		spotifyauth.ScopeUserReadPlaybackState,
+		spotifyauth.ScopeUserReadCurrentlyPlaying,
+		spotifyauth.ScopeUserReadRecentlyPlayed,
+		spotifyauth.ScopeUserLibraryRead,
+		spotifyauth.ScopeUserLibraryModify,
+		spotifyauth.ScopeUserModifyPlaybackState,
 		spotifyauth.ScopeUserReadPrivate,
 		spotifyauth.ScopePlaylistModifyPublic,
 		spotifyauth.ScopePlaylistModifyPrivate,
