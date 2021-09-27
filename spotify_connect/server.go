@@ -144,6 +144,16 @@ func (s *server) searchTrackInSpotify(yt *yandex_music.SingleTrack) {
 	//time.Sleep(time.Second * 1)
 }
 
+func (s *server) searchTracksInSpotifyChan(tracksChan chan yandex_music.SingleTrack, thread int) {
+	for yt := range tracksChan {
+		if yt.ID == "" {
+			break
+		}
+		s.searchTrackInSpotify(&yt)
+	}
+	s.threadsFinish[thread] = true
+}
+
 func (s *server) searchTracksInSpotify() {
 	if len(s.currentUser.ID) == 0 {
 		return
@@ -154,22 +164,16 @@ func (s *server) searchTracksInSpotify() {
 		}
 	}
 	s.nowSearchTrack = 0
+	tracksChan := make(chan yandex_music.SingleTrack)
 	for i := 0; i < s.maxThreads; i++ {
 		s.threadsFinish[i] = false
-		go func(trackGetter func() *yandex_music.SingleTrack, s *server, thread int) {
-			for true {
-				track := trackGetter()
-				if track == nil {
-					break
-				}
-				if track.ID == "" {
-					break
-				}
-				s.searchTrackInSpotify(track)
-			}
-			s.threadsFinish[thread] = true
-		}(s.getTrack, s, i)
+		go s.searchTracksInSpotifyChan(tracksChan, i)
 	}
+	for _, yt := range s.savedPlaylist.Tracks {
+		tracksChan <- yt
+	}
+	close(tracksChan)
+
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -434,7 +438,7 @@ func (s *server) handleCreatePlaylist() http.HandlerFunc {
 
 func (s *server) handleSearchOnSpotify() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.searchTracksInSpotify()
+		go s.searchTracksInSpotify()
 		http.Redirect(w, r, "/ya_music", http.StatusTemporaryRedirect)
 	}
 }
