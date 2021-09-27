@@ -4,8 +4,8 @@ import (
 	b64 "encoding/base64"
 	"flag"
 	"fmt"
+	"github.com/valyala/fasthttp"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
-	"net/http"
 )
 
 const (
@@ -55,5 +55,5 @@ func Start() error {
 	s := newServer(auth, "spotifyApi")
 	fmt.Printf("Starting at http://127.0.0.1:%d/\n", port)
 	fmt.Printf("Redirect uri %s\n", redirectURL())
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), s)
+	return fasthttp.ListenAndServe(fmt.Sprintf(":%d", port), s.ServeHTTP)
 }

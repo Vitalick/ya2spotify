@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/sirupsen/logrus"
+	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"net/http"
@@ -21,7 +22,7 @@ import (
 type yandexSpotifyTrackIdMap map[string]spotify.FullTrack
 
 type server struct {
-	router         *mux.Router
+	router         *routing.Router
 	logger         *logrus.Logger
 	auth           *spotifyauth.Authenticator
 	state          string
@@ -37,15 +38,9 @@ type server struct {
 	nowSearchTrack int
 }
 
-const (
-	ctxKeyRequestId ctxKey = iota
-)
-
-type ctxKey int8
-
 func newServer(auth *spotifyauth.Authenticator, state string) *server {
 	s := &server{
-		router:        mux.NewRouter(),
+		router:        routing.New(),
 		logger:        logrus.New(),
 		auth:          auth,
 		state:         state,
@@ -176,84 +171,105 @@ func (s *server) searchTracksInSpotify() {
 
 }
 
-func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.router.ServeHTTP(w, r)
+func (s *server) ServeHTTP(ctx *fasthttp.RequestCtx) {
+	s.router.HandleRequest(ctx)
 }
 
 func (s *server) configureRouter() {
 	s.router.Use(s.setRequestID)
 	s.router.Use(s.logRequest)
 	s.router.Use(s.setContentTypeHTML)
-	s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
-	s.router.HandleFunc("/", s.handleHome()).Methods(http.MethodGet)
-	s.router.HandleFunc("/login", s.handleLogin()).Methods(http.MethodGet)
-	s.router.HandleFunc("/logout", s.handleLogout()).Methods(http.MethodGet)
-	s.router.HandleFunc(callbackUri, s.handleCallbackSpotify()).Methods(http.MethodGet)
-	private := s.router.PathPrefix("/ya_music").Subrouter()
-	//private.Use(s.authenticateUser)
-	private.HandleFunc("", s.handleYandexMusic()).Methods(http.MethodGet)
-	private.HandleFunc("/create_playlist", s.handleCreatePlaylist()).Methods(http.MethodGet)
-	private.HandleFunc("/search", s.handleSearchOnSpotify()).Methods(http.MethodGet)
+	s.router.Use(s.setAllowedOrigins)
+	s.router.Get("/", s.handleHome)
+	s.router.Get("/login", s.handleLogin)
+	s.router.Get("/logout", s.handleLogout)
+	s.router.Get(callbackUri, s.handleCallbackSpotify)
+	yaMusic := s.router.Group("/ya_music")
+	//yaMusic.Use(s.authenticateUser)
+	yaMusic.Get("", s.handleYandexMusic)
+	yaMusic.Get("/create_playlist", s.handleCreatePlaylist)
+	yaMusic.Get("/search", s.handleSearchOnSpotify)
 }
 
-func (s *server) setContentTypeHTML(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "text/html; charset=utf-8")
-		next.ServeHTTP(w, r)
-	})
-}
-
-func (s *server) setRequestID(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id := uuid.New().String()
-		w.Header().Set("X-Request-ID", id)
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyRequestId, id)))
-	})
-}
-
-func (s *server) logRequest(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := s.logger.WithFields(logrus.Fields{
-			"remote_addr": r.RemoteAddr,
-			"request_id":  r.Context().Value(ctxKeyRequestId),
-		})
-		logger.Infof("started %s %s", r.Method, r.RequestURI)
-
-		start := time.Now()
-
-		rw := &responseWriter{w, http.StatusOK}
-
-		next.ServeHTTP(rw, r)
-
-		logger.Infof("complited with %s [%d] in %v", http.StatusText(rw.code), rw.code, time.Now().Sub(start))
-	})
-}
-
-func (s *server) handleCallbackSpotify() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		tok, err := s.auth.Token(r.Context(), s.state, r)
-		if err != nil {
-			s.error(w, r, http.StatusForbidden, err)
-			return
-		}
-		if st := r.FormValue("state"); st != s.state {
-			s.error(w, r, http.StatusNotFound, err)
-			return
-		}
-
-		// use the token to get an authenticated client
-		client := spotify.New(s.auth.Client(ctx, tok))
-		s.mClient.Lock()
-		s.spotifyClient = client
-		if s.currentUser, err = s.spotifyClient.CurrentUser(ctx); err != nil {
-			s.error(w, r, http.StatusUnprocessableEntity, err)
-			return
-		}
-		s.mClient.Unlock()
-		//s.respond(w, r, http.StatusOK, "Login Completed!")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+func (s *server) setContentTypeHTML(ctx *routing.Context) error {
+	ctx.Response.Header.Add("Content-Type", "text/html; charset=utf-8")
+	err := ctx.Next()
+	if err != nil {
+		return err
 	}
+	return nil
+}
+
+func (s *server) setAllowedOrigins(ctx *routing.Context) error {
+	ctx.Response.Header.Set("Access-Control-Allow-Credentials", "true")
+	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
+	err := ctx.Next()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *server) setRequestID(ctx *routing.Context) error {
+	id := uuid.New().String()
+	ctx.Response.Header.Set("X-Request-ID", id)
+	ctx.Set("requestId", id)
+	err := ctx.Next()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *server) logRequest(ctx *routing.Context) error {
+	logger := s.logger.WithFields(logrus.Fields{
+		"remote_addr": ctx.RemoteAddr(),
+		"request_id":  ctx.Get("requestId"),
+	})
+	logger.Infof("started %s %s", string(ctx.Method()), string(ctx.RequestURI()))
+
+	start := time.Now()
+
+	ctx.SetStatusCode(fasthttp.StatusOK)
+
+	err := ctx.Next()
+	if err != nil {
+		return err
+	}
+	statusCode := ctx.Response.StatusCode()
+	logger.Infof("complited with %s [%d] in %v", http.StatusText(statusCode), statusCode, time.Now().Sub(start))
+	return nil
+}
+
+func (s *server) handleCallbackSpotify(ctx *routing.Context) error {
+	var httpRequest http.Request
+	err := fasthttpadaptor.ConvertRequest(ctx.RequestCtx, &httpRequest, false)
+	if err != nil {
+		s.error(ctx, http.StatusForbidden, err)
+		return nil
+	}
+	tok, err := s.auth.Token(ctx, s.state, &httpRequest)
+	if err != nil {
+		s.error(ctx, http.StatusForbidden, err)
+		return nil
+	}
+	if st := string(ctx.FormValue("state")); st != s.state {
+		s.error(ctx, http.StatusNotFound, err)
+		return nil
+	}
+
+	// use the token to get an authenticated client
+	client := spotify.New(s.auth.Client(ctx, tok))
+	s.mClient.Lock()
+	s.spotifyClient = client
+	if s.currentUser, err = s.spotifyClient.CurrentUser(ctx); err != nil {
+		s.error(ctx, http.StatusUnprocessableEntity, err)
+		return nil
+	}
+	s.mClient.Unlock()
+	//s.respond(w, r, http.StatusOK, "Login Completed!")
+	ctx.Redirect("/", http.StatusTemporaryRedirect)
+	return nil
 }
 
 func (s *server) getHeader() string {
@@ -288,12 +304,11 @@ func (s *server) getHeader() string {
 	return page
 }
 
-func (s *server) handleHome() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		page := s.getHeader()
-		page += "<br/>You can <a href=\"/ya_music\">import</a> playlist from Yandex.Music"
-		s.respond(w, r, http.StatusOK, page)
-	}
+func (s *server) handleHome(ctx *routing.Context) error {
+	page := s.getHeader()
+	page += "<br/>You can <a href=\"/ya_music\">import</a> playlist from Yandex.Music"
+	s.respond(ctx, http.StatusOK, page)
+	return nil
 }
 
 func (s *server) getYandexList() string {
@@ -345,11 +360,10 @@ func (s *server) getYandexList() string {
 	return list
 }
 
-func (s *server) handleYandexMusic() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		page := s.getHeader()
-		importUrl := r.URL.Query().Get("import_url")
-		page += `
+func (s *server) handleYandexMusic(ctx *routing.Context) error {
+	page := s.getHeader()
+	importUrl := string(ctx.QueryArgs().Peek("import_url"))
+	page += `
 <form method="get">
 <label>Playlist url: </label>
 <input type="text" name="import_url"></input>
@@ -357,115 +371,111 @@ func (s *server) handleYandexMusic() http.HandlerFunc {
 </form>
 <p><a href="/">Home</a></p>
 `
-		if len(importUrl) > 0 {
-			var err error
-			var playlist *yandex_music.Playlist
-			if playlist, err = yandex_music.NewPlaylistFromLink(importUrl); err == nil && playlist != nil {
-				err = playlist.GetTracks()
-			}
-			if err != nil {
-				page += fmt.Sprintf("<p><strong>%v</strong></p>", err)
-			}
-			if err == nil {
-				if playlist != nil {
-					s.savedPlaylist = playlist
-				}
-				http.Redirect(w, r, "/ya_music", http.StatusTemporaryRedirect)
-				return
-			}
+	if len(importUrl) > 0 {
+		var err error
+		var playlist *yandex_music.Playlist
+		if playlist, err = yandex_music.NewPlaylistFromLink(importUrl); err == nil && playlist != nil {
+			err = playlist.GetTracks()
 		}
-		page += s.getYandexList()
-		s.respond(w, r, http.StatusOK, page)
-	}
-}
-
-func (s *server) handleCreatePlaylist() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if s.savedPlaylist == nil {
-			http.Redirect(w, r, "/ya_music", http.StatusTemporaryRedirect)
-			return
-		}
-		page := "<form method=\"get\">"
-		page += "<label>New playlist name: </label>"
-		page += fmt.Sprintf("<input type=\"text\" name=\"playlist_name\" value=\"%s\" required>",
-			s.savedPlaylist.Title,
-		)
-		page += "<label>New playlist description: </label>"
-		page += fmt.Sprintf("<input type=\"text\" name=\"playlist_description\" value=\"%s\">",
-			s.savedPlaylist.Description,
-		)
-		page += "<button type=\"submit\">Create</button>"
-		page += "</form>"
-		page += "<p><a href=\"/\">Home</a></p>"
-		page += s.getYandexList()
-		s.logger.Infoln(r.URL.Query())
-		playlistName := r.URL.Query().Get("playlist_name")
-		playlistDescription := r.URL.Query().Get("playlist_description")
-		if len(playlistName) == 0 {
-			s.respond(w, r, http.StatusOK, page)
-			return
-		}
-		s.mClient.Lock()
-		defer s.mClient.Unlock()
-		if s.currentUser.ID == "" {
-			s.logger.Infoln("not user id")
-			page = "<p>Not user id!</p>" + page
-			s.respond(w, r, http.StatusOK, page)
-			return
-		}
-		playlist, err := s.spotifyClient.CreatePlaylistForUser(context.Background(), s.currentUser.ID, playlistName, playlistDescription, false, false)
 		if err != nil {
-			s.logger.Errorln(err)
-			page = fmt.Sprintf("<p>%v</p>", err) + page
-			s.respond(w, r, http.StatusOK, page)
-			return
+			page += fmt.Sprintf("<p><strong>%v</strong></p>", err)
 		}
-		var trackIds []spotify.ID
-		for _, foundedTrack := range s.foundedTracks() {
-			trackIds = append(trackIds, foundedTrack.ID)
+		if err == nil {
+			if playlist != nil {
+				s.savedPlaylist = playlist
+			}
+			ctx.Redirect("/ya_music", http.StatusTemporaryRedirect)
+			return nil
 		}
-		_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
-		if err != nil {
-			s.logger.Errorln(err)
-			page = fmt.Sprintf("<p>%v</p>", err) + page
-			s.respond(w, r, http.StatusOK, page)
-			return
-		}
-		page = "<p>Success create playlist!</p>" + page
-		s.respond(w, r, http.StatusOK, page)
 	}
+	page += s.getYandexList()
+	s.respond(ctx, http.StatusOK, page)
+	return nil
 }
 
-func (s *server) handleSearchOnSpotify() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		go s.searchTracksInSpotify()
-		http.Redirect(w, r, "/ya_music", http.StatusTemporaryRedirect)
+func (s *server) handleCreatePlaylist(ctx *routing.Context) error {
+	if s.savedPlaylist == nil {
+		ctx.Redirect("/ya_music", http.StatusTemporaryRedirect)
+		return nil
 	}
+	page := "<form method=\"get\">"
+	page += "<label>New playlist name: </label>"
+	page += fmt.Sprintf("<input type=\"text\" name=\"playlist_name\" value=\"%s\" required>",
+		s.savedPlaylist.Title,
+	)
+	page += "<label>New playlist description: </label>"
+	page += fmt.Sprintf("<input type=\"text\" name=\"playlist_description\" value=\"%s\">",
+		s.savedPlaylist.Description,
+	)
+	page += "<button type=\"submit\">Create</button>"
+	page += "</form>"
+	page += "<p><a href=\"/\">Home</a></p>"
+	page += s.getYandexList()
+	s.logger.Infoln(ctx.QueryArgs())
+	playlistName := string(ctx.QueryArgs().Peek("playlist_name"))
+	playlistDescription := string(ctx.QueryArgs().Peek("playlist_description"))
+	if len(playlistName) == 0 {
+		s.respond(ctx, http.StatusOK, page)
+		return nil
+	}
+	s.mClient.Lock()
+	defer s.mClient.Unlock()
+	if s.currentUser.ID == "" {
+		s.logger.Infoln("not user id")
+		page = "<p>Not user id!</p>" + page
+		s.respond(ctx, http.StatusOK, page)
+		return nil
+	}
+	playlist, err := s.spotifyClient.CreatePlaylistForUser(context.Background(), s.currentUser.ID, playlistName, playlistDescription, false, false)
+	if err != nil {
+		s.logger.Errorln(err)
+		page = fmt.Sprintf("<p>%v</p>", err) + page
+		s.respond(ctx, http.StatusOK, page)
+		return nil
+	}
+	var trackIds []spotify.ID
+	for _, foundedTrack := range s.foundedTracks() {
+		trackIds = append(trackIds, foundedTrack.ID)
+	}
+	_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
+	if err != nil {
+		s.logger.Errorln(err)
+		page = fmt.Sprintf("<p>%v</p>", err) + page
+		s.respond(ctx, http.StatusOK, page)
+		return nil
+	}
+	page = "<p>Success create playlist!</p>" + page
+	s.respond(ctx, http.StatusOK, page)
+	return nil
 }
 
-func (s *server) handleLogin() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		redirectUri := s.auth.AuthURL(s.state)
-		http.Redirect(w, r, redirectUri, http.StatusTemporaryRedirect)
-	}
+func (s *server) handleSearchOnSpotify(ctx *routing.Context) error {
+	go s.searchTracksInSpotify()
+	ctx.Redirect("/ya_music", http.StatusTemporaryRedirect)
+	return nil
 }
 
-func (s *server) handleLogout() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		s.mClient.Lock()
-		s.currentUser, s.spotifyClient = &spotify.PrivateUser{}, &spotify.Client{}
-		s.mClient.Unlock()
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-	}
+func (s *server) handleLogin(ctx *routing.Context) error {
+	redirectUri := s.auth.AuthURL(s.state)
+	ctx.Redirect(redirectUri, http.StatusTemporaryRedirect)
+	return nil
 }
 
-func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
+func (s *server) handleLogout(ctx *routing.Context) error {
+	s.mClient.Lock()
+	s.currentUser, s.spotifyClient = &spotify.PrivateUser{}, &spotify.Client{}
+	s.mClient.Unlock()
+	ctx.Redirect("/", http.StatusTemporaryRedirect)
+	return nil
+}
+
+func (s *server) error(ctx *routing.Context, code int, err error) {
 	resp := map[string]string{"error": err.Error()}
 	marshal, _ := json.Marshal(resp)
-	s.respond(w, r, code, string(marshal))
+	s.respond(ctx, code, string(marshal))
 }
 
-func (s *server) respond(w http.ResponseWriter, _ *http.Request, code int, data string) {
-	w.WriteHeader(code)
-	_, _ = w.Write([]byte(data))
+func (s *server) respond(ctx *routing.Context, code int, data string) {
+	ctx.SetStatusCode(code)
+	_, _ = ctx.WriteString(data)
 }
