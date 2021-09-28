@@ -278,25 +278,6 @@ func (s *server) getHeader() string {
 	page := ""
 	if len(s.currentUser.ID) > 0 {
 		page += fmt.Sprintf("User: %s<br/>ID: %s <br/>", s.currentUser.DisplayName, s.currentUser.ID)
-		//s.mClient.Lock()
-		//currentPlay, err := s.spotifyClient.PlayerCurrentlyPlaying(ctx)
-		//s.mClient.Unlock()
-		//if err != nil {
-		//	page += "Error in retrieving now playing!</br>"
-		//	s.logger.Error(err)
-		//} else {
-		//	if currentPlay.Playing {
-		//		var artists []string
-		//		for _, artist := range currentPlay.Item.Artists {
-		//			artists = append(artists, fmt.Sprintf("<a target=\"_blank_\" href=\"%s\">%s</a>", artist.URI, artist.Name))
-		//		}
-		//		trackName := fmt.Sprintf("<a target=\"_blank_\" href=\"%s\">%s</a>", currentPlay.Item.URI, currentPlay.Item.Name)
-		//		page += fmt.Sprintf("Now playing: %s - %s<br/>", strings.Join(artists, ", "), trackName)
-		//	} else {
-		//		page += "Now playing nothing!</br>"
-		//	}
-		//
-		//}
 		page += fmt.Sprintf("You can %s", outLink)
 	} else {
 		page += fmt.Sprintf("You can %s", inLink)
