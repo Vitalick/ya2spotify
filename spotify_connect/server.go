@@ -415,15 +415,27 @@ func (s *server) handleCreatePlaylist(ctx *routing.Context) error {
 		return nil
 	}
 	var trackIds []spotify.ID
-	for _, foundedTrack := range s.foundedTracks() {
+	for i, foundedTrack := range s.foundedTracks() {
 		trackIds = append(trackIds, foundedTrack.ID)
+		if (i+1)%100 == 0 {
+			_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
+			if err != nil {
+				s.logger.Errorln(err)
+				page = fmt.Sprintf("<p>%v</p>", err) + page
+				s.respond(ctx, http.StatusOK, page)
+				return nil
+			}
+			trackIds = []spotify.ID{}
+		}
 	}
-	_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
-	if err != nil {
-		s.logger.Errorln(err)
-		page = fmt.Sprintf("<p>%v</p>", err) + page
-		s.respond(ctx, http.StatusOK, page)
-		return nil
+	if len(trackIds) > 0 {
+		_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
+		if err != nil {
+			s.logger.Errorln(err)
+			page = fmt.Sprintf("<p>%v</p>", err) + page
+			s.respond(ctx, http.StatusOK, page)
+			return nil
+		}
 	}
 	page = "<p>Success create playlist!</p>" + page
 	s.respond(ctx, http.StatusOK, page)
