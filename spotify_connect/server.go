@@ -9,10 +9,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
+	"github.com/vitalick/go-d2editor"
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"net/http"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -189,10 +191,25 @@ func (s *server) configureRouter() {
 	yaMusic.Get("", s.handleYandexMusic)
 	yaMusic.Get("/create_playlist", s.handleCreatePlaylist)
 	yaMusic.Get("/search", s.handleSearchOnSpotify)
+	yaMusic.Get("/playlists", s.handleSpotifyPlaylists)
+	yaMusic.Get("/playlists/<page>", s.handleSpotifyPlaylists)
+	yaMusic.Get("/liked_playlist", s.handleSpotifySaved)
+	yaMusic.Get("/playlist/<id>", s.handleSpotifyPlaylist)
+	yaMusic.Get("/playlist/<id>/<page>", s.handleSpotifyPlaylist)
+	yaMusic.Post("/testd2s", s.setContentTypeJSON, s.handleTestD2s)
 }
 
 func (s *server) setContentTypeHTML(ctx *routing.Context) error {
 	ctx.Response.Header.Add("Content-Type", "text/html; charset=utf-8")
+	err := ctx.Next()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *server) setContentTypeJSON(ctx *routing.Context) error {
+	ctx.Response.Header.Set("Content-Type", "application/json; charset=utf-8")
 	err := ctx.Next()
 	if err != nil {
 		return err
@@ -275,10 +292,14 @@ func (s *server) handleCallbackSpotify(ctx *routing.Context) error {
 func (s *server) getHeader() string {
 	inLink := "<a href=\"/login\">login</a>"
 	outLink := "<a href=\"/logout\">logout</a>"
+	playlistsLink := "<a href=\"/ya_music/playlists\">playlists</a>"
+	savedPlaylistLink := "<a href=\"/ya_music/liked_playlist\">liked playlist</a>"
 	page := ""
 	if len(s.currentUser.ID) > 0 {
 		page += fmt.Sprintf("User: %s<br/>ID: %s <br/>", s.currentUser.DisplayName, s.currentUser.ID)
-		page += fmt.Sprintf("You can %s", outLink)
+		page += fmt.Sprintf("You can %s <br/>", outLink)
+		page += fmt.Sprintf("You can watch spotify %s <br/>", playlistsLink)
+		page += fmt.Sprintf("You can watch spotify %s", savedPlaylistLink)
 	} else {
 		page += fmt.Sprintf("You can %s", inLink)
 	}
@@ -448,6 +469,166 @@ func (s *server) handleSearchOnSpotify(ctx *routing.Context) error {
 	return nil
 }
 
+const pageSize = 10
+
+func (s *server) handleSpotifyPlaylists(ctx *routing.Context) error {
+	page := "<h1>Playlists</h1>"
+	var err error = nil
+	if s.currentUser == nil || s.currentUser.ID == "" {
+		ctx.Redirect("/", http.StatusTemporaryRedirect)
+		return nil
+	}
+	pageNum := 1
+	pageStr := ctx.Param("page")
+	if pageStr != "" {
+		pageNum, err = strconv.Atoi(pageStr)
+		if pageNum == 0 || err != nil {
+			pageNum = 1
+		}
+	}
+	page += fmt.Sprintf("<h2>Page %d</h2>", pageNum)
+	page += "<div>"
+	playlists, err := s.spotifyClient.CurrentUsersPlaylists(context.Background(), spotify.Limit(pageSize), spotify.Offset(pageSize*(pageNum-1)))
+	if err != nil {
+		page += err.Error()
+		page += "</div>"
+		s.respond(ctx, http.StatusInternalServerError, page)
+		return nil
+	}
+	page += "<ul>"
+	for _, pl := range playlists.Playlists {
+		page += "<li>"
+		page += fmt.Sprintf(`<a href="/ya_music/playlist/%s">%s</a>`, pl.ID, pl.Name)
+		page += "</li>"
+	}
+	page += "</ul>"
+	page += "</div>"
+	page += "<div>"
+	if pageNum > 1 {
+		page += fmt.Sprintf(`<a href="/ya_music/playlists/%d">Prev</a>`, pageNum-1)
+	}
+	if pageSize*(pageNum-1)+len(playlists.Playlists) < playlists.Total {
+		page += fmt.Sprintf(`<a href="/ya_music/playlists/%d">Next</a>`, pageNum+1)
+	}
+	page += "</div>"
+
+	s.respond(ctx, http.StatusOK, page)
+	return nil
+}
+
+func (s *server) handleSpotifyPlaylist(ctx *routing.Context) error {
+	page := "<h1>Playlist</h1>"
+	var err error = nil
+	if s.currentUser == nil || s.currentUser.ID == "" {
+		ctx.Redirect("/", http.StatusTemporaryRedirect)
+		return nil
+	}
+	pageNum := 1
+	pageStr := ctx.Param("page")
+	if pageStr != "" {
+		pageNum, err = strconv.Atoi(pageStr)
+		if pageNum == 0 || err != nil {
+			pageNum = 1
+		}
+	}
+	idStr := ctx.Param("id")
+	if idStr == "" {
+		ctx.Redirect("/", http.StatusTemporaryRedirect)
+		return nil
+	}
+	page += fmt.Sprintf("<h2>ID %s</h2>", idStr)
+	page += fmt.Sprintf("<h2>Page %d</h2>", pageNum)
+	page += "<div>"
+	playlist, err := s.spotifyClient.GetPlaylistTracks(context.Background(), spotify.ID(idStr), spotify.Limit(100), spotify.Offset(100*(pageNum-1)))
+	if err != nil {
+		page += err.Error()
+		page += "</div>"
+		s.respond(ctx, http.StatusInternalServerError, page)
+		return nil
+	}
+	page += "<ul>"
+	for _, track := range playlist.Tracks {
+		page += "<li>"
+		artists := make([]string, len(track.Track.Artists))
+		for i, art := range track.Track.Artists {
+			artists[i] = art.Name
+		}
+		page += fmt.Sprintf("%s - %s", strings.Join(artists, ", "), track.Track.Name)
+		page += "</li>"
+	}
+	page += "</ul>"
+	page += "</div>"
+	page += "<div>"
+	if pageNum > 1 {
+		page += fmt.Sprintf(`<a href="/ya_music/playlist/%s/%d">Prev</a>`, idStr, pageNum-1)
+	}
+	if 100*(pageNum-1)+len(playlist.Tracks) < playlist.Total {
+		page += fmt.Sprintf(`<a href="/ya_music/playlist/%s/%d">Next</a>`, idStr, pageNum+1)
+	}
+	page += "</div>"
+
+	s.respond(ctx, http.StatusOK, page)
+	return nil
+}
+
+func (s *server) handleSpotifySaved(ctx *routing.Context) error {
+	page := "<h1>Liked Playlist</h1>"
+	if s.currentUser == nil || s.currentUser.ID == "" {
+		ctx.Redirect("/", http.StatusTemporaryRedirect)
+		return nil
+	}
+	pageNum := 1
+	page += "<div>"
+	page += "<ul>"
+	for {
+		playlist, err := s.spotifyClient.CurrentUsersTracks(context.Background(), spotify.Limit(pageSize), spotify.Offset(pageSize*(pageNum-1)))
+		if err != nil {
+			break
+		}
+		for _, track := range playlist.Tracks {
+			page += "<li>"
+			artists := make([]string, len(track.Artists))
+			for i, art := range track.Artists {
+				artists[i] = art.Name
+			}
+			page += fmt.Sprintf("%s - %s", strings.Join(artists, ", "), track.Name)
+			page += "</li>"
+		}
+		if pageSize*(pageNum-1)+len(playlist.Tracks) >= playlist.Total {
+			break
+		}
+		pageNum += 1
+		time.Sleep(time.Millisecond * 100)
+	}
+
+	page += "</ul>"
+	page += "</div>"
+
+	s.respond(ctx, http.StatusOK, page)
+	return nil
+}
+
+func (s *server) handleTestD2s(ctx *routing.Context) error {
+	file, err := ctx.FormFile("d2s")
+	if err != nil {
+		s.error(ctx, fasthttp.StatusUnprocessableEntity, err)
+		return nil
+	}
+	f, err := file.Open()
+	if err != nil {
+		s.error(ctx, fasthttp.StatusUnprocessableEntity, err)
+		return nil
+	}
+	defer f.Close()
+	c, err := d2editor.NewCharacter(f)
+	if err != nil {
+		s.error(ctx, fasthttp.StatusUnprocessableEntity, err)
+		return nil
+	}
+	s.respondJSON(ctx, fasthttp.StatusOK, c)
+	return nil
+}
+
 func (s *server) handleLogin(ctx *routing.Context) error {
 	redirectUri := s.auth.AuthURL(s.state)
 	ctx.Redirect(redirectUri, http.StatusTemporaryRedirect)
@@ -471,4 +652,11 @@ func (s *server) error(ctx *routing.Context, code int, err error) {
 func (s *server) respond(ctx *routing.Context, code int, data string) {
 	ctx.SetStatusCode(code)
 	_, _ = ctx.WriteString(data)
+}
+
+func (s *server) respondJSON(ctx *routing.Context, code int, data interface{}) {
+	ctx.SetStatusCode(code)
+	enc := json.NewEncoder(ctx)
+	enc.Encode(data)
+	//_, _ = ctx.WriteString(b)
 }

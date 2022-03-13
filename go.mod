@@ -15,6 +15,7 @@ require (
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87
 	github.com/valyala/fasthttp v1.30.0
+	github.com/vitalick/go-d2editor v0.2.0 // indirect
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
 	golang.org/x/text v0.3.7
 )
