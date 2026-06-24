@@ -1,0 +1,1008 @@
+[
+  {
+    "op": "replace",
+    "path": "\u002FdisclaimersDictionary\u002FloadingState",
+    "value": "RESOLVE"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fuuid",
+    "value": "65b2e7a9-b735-e097-9b2c-ec6a89125c71"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002FloadingState",
+    "value": "PENDING"
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F0",
+    "value": {
+      "uuid": "18482608-f1fe-e47f-209d-6d213070125c",
+      "isAvailable": true,
+      "revision": 5,
+      "uid": 103372440,
+      "kind": 2328,
+      "title": "Наташ, мы всё собрали",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F30088\u002F103372440.2328.200\u002F%%?1588067000200",
+      "tracksCount": 25,
+      "averageColor": "#a38c28",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F1",
+    "value": {
+      "uuid": "bba43681-f7ee-bb94-5e04-7c6cabde4706",
+      "isAvailable": true,
+      "revision": 21,
+      "uid": 103372440,
+      "kind": 1922,
+      "title": "Легенды осени",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F27701\u002F103372440.1922.13117\u002F%%?1568645113117",
+      "tracksCount": 19,
+      "averageColor": "#5bacd6",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F2",
+    "value": {
+      "uuid": "c4af4cf6-9beb-d376-6097-e478a3188dad",
+      "isAvailable": true,
+      "revision": 12,
+      "uid": 139954184,
+      "kind": 1700,
+      "title": "Рио-де-Жанейро в десяти песнях",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F59900\u002F139954184.1700.73451\u002F%%?1568646473451",
+      "tracksCount": 9,
+      "averageColor": "#2fa53a",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F3",
+    "value": {
+      "uuid": "28f4e377-2e9b-149c-e1e0-dc5e56953f08",
+      "isAvailable": true,
+      "revision": 1,
+      "uid": 103372440,
+      "kind": 2229,
+      "title": "Рэп для студентов",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F70586\u002F103372440.2229.55770\u002F%%?1577440955770",
+      "tracksCount": 13,
+      "averageColor": "#a73037",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F4",
+    "value": {
+      "uuid": "2e8982c4-38e3-a387-d36b-a00e5b0df41d",
+      "isAvailable": true,
+      "revision": 28,
+      "uid": 103372440,
+      "kind": 1157,
+      "title": "Песни про бабушку",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F38125\u002F103372440.1157.43251\u002F%%?1549463343251",
+      "tracksCount": 9,
+      "averageColor": "#666665",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F5",
+    "value": {
+      "uuid": "d7c14d58-bd8d-bdb6-bb2a-c691ae26995f",
+      "isAvailable": true,
+      "revision": 99,
+      "uid": 103372440,
+      "kind": 2512,
+      "title": "«Грэмми-2022»",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F51766\u002F103372440.2512.74717\u002F%%?1649050274717",
+      "tracksCount": 19,
+      "averageColor": "#886a21",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F6",
+    "value": {
+      "uuid": "1f153697-2bb5-ffbb-095d-07f2a5c15a6f",
+      "isAvailable": true,
+      "revision": 12,
+      "uid": 103372440,
+      "kind": 1458,
+      "title": "Императив в песнях Аллы Пугачёвой",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F28719\u002F103372440.1458.12885\u002F%%?1549463412885",
+      "tracksCount": 20,
+      "averageColor": "#8e232b",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F7",
+    "value": {
+      "uuid": "7c421903-f9a0-9893-162d-ebc5232f68d5",
+      "isAvailable": true,
+      "revision": 2,
+      "uid": 139954184,
+      "kind": 1192,
+      "title": "Нью-Йорк, Нью-Йорк: песни о городе",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F51766\u002F139954184.1192.38433\u002F%%?1568646638433",
+      "tracksCount": 12,
+      "averageColor": "#5b95d6",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F8",
+    "value": {
+      "uuid": "935a0afa-644f-c684-b972-bcfa1db68f25",
+      "isAvailable": true,
+      "revision": 40,
+      "uid": 103372440,
+      "kind": 1149,
+      "title": "Песни про тёщу",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F51766\u002F103372440.1149.85973\u002F%%?1549463385973",
+      "tracksCount": 13,
+      "averageColor": "#459d72",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F9",
+    "value": {
+      "uuid": "243866ec-eb53-4a3d-f7a5-3f093069c9a2",
+      "isAvailable": true,
+      "revision": 56,
+      "uid": 574178821,
+      "kind": 1051,
+      "title": "Ритмы и мелодии югославской эстрады 80-х",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F34120\u002F574178821.1051.80908\u002F%%?1568645380908",
+      "tracksCount": 2,
+      "averageColor": "#d6685b",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FsimilarPlaylists\u002F10",
+    "value": {
+      "uuid": "d8c9c01f-21da-876b-fb70-48f4f365e361",
+      "isAvailable": true,
+      "revision": 28,
+      "uid": 574178821,
+      "kind": 1084,
+      "title": "Ритмы и мелодии японской эстрады 90-х",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F11371754\u002F574178821.1084.98710\u002F%%?1743767898710",
+      "tracksCount": 14,
+      "averageColor": "#a39287",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": false
+      },
+      "pendingLikesCount": 0,
+      "artists": []
+    }
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fmeta",
+    "value": {
+      "uuid": "65b2e7a9-b735-e097-9b2c-ec6a89125c71",
+      "isAvailable": true,
+      "revision": 9,
+      "uid": 103372440,
+      "kind": 2324,
+      "title": "Змеиный плейлист",
+      "coverUri": "avatars.yandex.net\u002Fget-music-user-playlist\u002F38125\u002F103372440.2324.88477ru\u002F%%?1587990689653",
+      "tracksCount": 6,
+      "averageColor": "#6c9f2c",
+      "personalColor": null,
+      "visibility": "public",
+      "trailer": {
+        "available": true
+      },
+      "likesCount": 6307,
+      "pendingLikesCount": 0,
+      "owner": {
+        "uid": 103372440,
+        "login": "music-blog",
+        "name": "Яндекс Музыка",
+        "sex": "male",
+        "verified": true
+      },
+      "modified": "2020-04-27T04:40:17+00:00",
+      "description": "Шесть шипящих треков от чешуйчатых исполнителей прямиком из параллельной вселенной «Рика и Морти». Извиваться — разрешается!",
+      "tags": [
+        {
+          "id": "5d5d21281d10461b4537d598",
+          "value": "no compilation"
+        }
+      ],
+      "madeFor": null
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002Fitems\u002F0",
+    "value": {
+      "id": "65093274",
+      "albumId": 10509403,
+      "key": "65093274-0",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002Fitems\u002F1",
+    "value": {
+      "id": "65093167",
+      "albumId": 10509377,
+      "key": "65093167-1",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002Fitems\u002F2",
+    "value": {
+      "id": "65093357",
+      "albumId": 10509423,
+      "key": "65093357-2",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002Fitems\u002F3",
+    "value": {
+      "id": "65092713",
+      "albumId": 10509244,
+      "key": "65092713-3",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002Fitems\u002F4",
+    "value": {
+      "id": "65093322",
+      "albumId": 10509414,
+      "key": "65093322-4",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002Fitems\u002F5",
+    "value": {
+      "id": "65093039",
+      "albumId": 10509356,
+      "key": "65093039-5",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FinitialItems\u002F0",
+    "value": {
+      "id": "65093274",
+      "albumId": 10509403,
+      "key": "65093274-0",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FinitialItems\u002F1",
+    "value": {
+      "id": "65093167",
+      "albumId": 10509377,
+      "key": "65093167-1",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FinitialItems\u002F2",
+    "value": {
+      "id": "65093357",
+      "albumId": 10509423,
+      "key": "65093357-2",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FinitialItems\u002F3",
+    "value": {
+      "id": "65092713",
+      "albumId": 10509244,
+      "key": "65092713-3",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FinitialItems\u002F4",
+    "value": {
+      "id": "65093322",
+      "albumId": 10509414,
+      "key": "65093322-4",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "add",
+    "path": "\u002Fplaylist\u002FinitialItems\u002F5",
+    "value": {
+      "id": "65093039",
+      "albumId": 10509356,
+      "key": "65093039-5",
+      "data": null,
+      "loadingState": "IDLE"
+    }
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F0\u002FloadingState",
+    "value": "PENDING"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F1\u002FloadingState",
+    "value": "PENDING"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F2\u002FloadingState",
+    "value": "PENDING"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F3\u002FloadingState",
+    "value": "PENDING"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F4\u002FloadingState",
+    "value": "PENDING"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F5\u002FloadingState",
+    "value": "PENDING"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F0",
+    "value": {
+      "id": "65093274",
+      "albumId": 10509403,
+      "key": "65093274-0",
+      "data": {
+        "id": "65093274",
+        "isAvailable": true,
+        "isRemoved": false,
+        "title": "На кончике хвоста",
+        "trackSource": "OWN",
+        "durationMs": 132000,
+        "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2441215\u002F0b3271ca.a.10509403-2\u002F%%",
+        "averageColor": "#a0602f",
+        "albumId": 10509403,
+        "type": "music",
+        "hasLyrics": false,
+        "hasSyncLyrics": false,
+        "trailer": {
+          "available": true
+        },
+        "shouldRememberPosition": false,
+        "streamProgress": {},
+        "shortDescription": "",
+        "major": {
+          "id": 0,
+          "name": "-"
+        },
+        "genre": "soundtrack",
+        "realId": "65093274",
+        "disclaimers": [],
+        "artists": [
+          {
+            "id": "9088811",
+            "name": "Снейк Синатра",
+            "various": false,
+            "isComposer": false,
+            "isAvailable": true,
+            "trailer": {
+              "available": false
+            },
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2806365\u002F184f094f.p.9088811\u002F%%",
+            "coverType": "from-artist-photos",
+            "pendingLikesCount": 0,
+            "disclaimers": [],
+            "averageColor": ""
+          }
+        ],
+        "albums": [
+          {
+            "id": 10509403,
+            "title": "На кончике хвоста",
+            "type": "single",
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2441215\u002F0b3271ca.a.10509403-2\u002F%%",
+            "averageColor": "",
+            "year": 2020,
+            "isAvailable": true,
+            "availableForOptions": [
+              "bookmate"
+            ],
+            "availableForPremiumUsers": true,
+            "genre": "soundtrack",
+            "trackPosition": {
+              "volume": 1,
+              "index": 1
+            },
+            "trackCount": 1,
+            "bestAlbumTracks": [],
+            "trailer": {
+              "available": false
+            },
+            "listeningFinished": false,
+            "likesCount": 30,
+            "pendingLikesCount": 0,
+            "disclaimers": []
+          }
+        ]
+      },
+      "loadingState": "RESOLVE"
+    }
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F1",
+    "value": {
+      "id": "65093167",
+      "albumId": 10509377,
+      "key": "65093167-1",
+      "data": {
+        "id": "65093167",
+        "isAvailable": true,
+        "isRemoved": false,
+        "title": "Чешуя и яд",
+        "trackSource": "OWN",
+        "durationMs": 137420,
+        "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2386207\u002Ffc1d30bb.a.10509377-1\u002F%%",
+        "averageColor": "#300f0f",
+        "albumId": 10509377,
+        "type": "music",
+        "hasLyrics": false,
+        "hasSyncLyrics": false,
+        "trailer": {
+          "available": true
+        },
+        "shouldRememberPosition": false,
+        "streamProgress": {},
+        "shortDescription": "",
+        "major": {
+          "id": 0,
+          "name": "-"
+        },
+        "genre": "soundtrack",
+        "realId": "65093167",
+        "disclaimers": [
+          "explicit",
+          "explicitIcon:671a23afcec5646906723a54",
+          "descriptionText:67370c8e13b92b0a60256675"
+        ],
+        "artists": [
+          {
+            "id": "9088796",
+            "name": "AS\u002FDS",
+            "various": false,
+            "isComposer": false,
+            "isAvailable": true,
+            "trailer": {
+              "available": false
+            },
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2442093\u002Fc33c1783.p.9088796\u002F%%",
+            "coverType": "from-artist-photos",
+            "pendingLikesCount": 0,
+            "disclaimers": [],
+            "averageColor": ""
+          }
+        ],
+        "albums": [
+          {
+            "id": 10509377,
+            "title": "Чешуя и яд",
+            "type": "single",
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2386207\u002Ffc1d30bb.a.10509377-1\u002F%%",
+            "averageColor": "",
+            "year": 2020,
+            "isAvailable": true,
+            "availableForOptions": [
+              "bookmate"
+            ],
+            "availableForPremiumUsers": true,
+            "genre": "soundtrack",
+            "trackPosition": {
+              "volume": 1,
+              "index": 1
+            },
+            "trackCount": 1,
+            "bestAlbumTracks": [],
+            "trailer": {
+              "available": false
+            },
+            "listeningFinished": false,
+            "likesCount": 58,
+            "pendingLikesCount": 0,
+            "disclaimers": [
+              "explicit",
+              "explicitIcon:671a23afcec5646906723a54",
+              "descriptionText:67370c8e13b92b0a60256675"
+            ]
+          }
+        ]
+      },
+      "loadingState": "RESOLVE"
+    }
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F2",
+    "value": {
+      "id": "65093357",
+      "albumId": 10509423,
+      "key": "65093357-2",
+      "data": {
+        "id": "65093357",
+        "isAvailable": true,
+        "isRemoved": false,
+        "title": "Песчаный релакс",
+        "trackSource": "OWN",
+        "durationMs": 147860,
+        "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F3226792\u002F3a4566ad.a.10509423-1\u002F%%",
+        "averageColor": "#592316",
+        "albumId": 10509423,
+        "type": "music",
+        "hasLyrics": false,
+        "hasSyncLyrics": false,
+        "trailer": {
+          "available": true
+        },
+        "shouldRememberPosition": false,
+        "streamProgress": {},
+        "shortDescription": "",
+        "major": {
+          "id": 0,
+          "name": "-"
+        },
+        "genre": "soundtrack",
+        "realId": "65093357",
+        "disclaimers": [],
+        "artists": [
+          {
+            "id": "9088825",
+            "name": "Змеиные мечты",
+            "various": false,
+            "isComposer": false,
+            "isAvailable": true,
+            "trailer": {
+              "available": false
+            },
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2424959\u002Fbadc7877.p.9088825\u002F%%",
+            "coverType": "from-artist-photos",
+            "pendingLikesCount": 0,
+            "disclaimers": [],
+            "averageColor": ""
+          }
+        ],
+        "albums": [
+          {
+            "id": 10509423,
+            "title": "Песчаный релакс",
+            "type": "single",
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F3226792\u002F3a4566ad.a.10509423-1\u002F%%",
+            "averageColor": "",
+            "year": 2020,
+            "isAvailable": true,
+            "availableForOptions": [
+              "bookmate"
+            ],
+            "availableForPremiumUsers": true,
+            "genre": "soundtrack",
+            "trackPosition": {
+              "volume": 1,
+              "index": 1
+            },
+            "trackCount": 1,
+            "bestAlbumTracks": [],
+            "trailer": {
+              "available": false
+            },
+            "listeningFinished": false,
+            "likesCount": 26,
+            "pendingLikesCount": 0,
+            "disclaimers": []
+          }
+        ]
+      },
+      "loadingState": "RESOLVE"
+    }
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F3",
+    "value": {
+      "id": "65092713",
+      "albumId": 10509244,
+      "key": "65092713-3",
+      "data": {
+        "id": "65092713",
+        "isAvailable": true,
+        "isRemoved": false,
+        "title": "Кусь",
+        "trackSource": "OWN",
+        "durationMs": 184480,
+        "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2357076\u002Ff3370bda.a.10509244-1\u002F%%",
+        "averageColor": "#602fb8",
+        "albumId": 10509244,
+        "type": "music",
+        "hasLyrics": false,
+        "hasSyncLyrics": false,
+        "trailer": {
+          "available": true
+        },
+        "shouldRememberPosition": false,
+        "streamProgress": {},
+        "shortDescription": "",
+        "major": {
+          "id": 0,
+          "name": "-"
+        },
+        "genre": "soundtrack",
+        "realId": "65092713",
+        "disclaimers": [],
+        "artists": [
+          {
+            "id": "9088746",
+            "name": "DJ Палзуха",
+            "various": false,
+            "isComposer": false,
+            "isAvailable": true,
+            "trailer": {
+              "available": false
+            },
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F3071110\u002F4712d1e7.p.9088746\u002F%%",
+            "coverType": "from-artist-photos",
+            "pendingLikesCount": 0,
+            "disclaimers": [],
+            "averageColor": ""
+          }
+        ],
+        "albums": [
+          {
+            "id": 10509244,
+            "title": "Кусь",
+            "type": "single",
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2357076\u002Ff3370bda.a.10509244-1\u002F%%",
+            "averageColor": "",
+            "year": 2020,
+            "isAvailable": true,
+            "availableForOptions": [
+              "bookmate"
+            ],
+            "availableForPremiumUsers": true,
+            "genre": "soundtrack",
+            "trackPosition": {
+              "volume": 1,
+              "index": 1
+            },
+            "trackCount": 1,
+            "bestAlbumTracks": [],
+            "trailer": {
+              "available": false
+            },
+            "listeningFinished": false,
+            "likesCount": 14,
+            "pendingLikesCount": 0,
+            "disclaimers": []
+          }
+        ]
+      },
+      "loadingState": "RESOLVE"
+    }
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F4",
+    "value": {
+      "id": "65093322",
+      "albumId": 10509414,
+      "key": "65093322-4",
+      "data": {
+        "id": "65093322",
+        "isAvailable": true,
+        "isRemoved": false,
+        "title": "Змееста",
+        "trackSource": "OWN",
+        "durationMs": 168000,
+        "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2427101\u002F219fe4c8.a.10509414-1\u002F%%",
+        "averageColor": "#5bb7d6",
+        "albumId": 10509414,
+        "type": "music",
+        "hasLyrics": false,
+        "hasSyncLyrics": false,
+        "trailer": {
+          "available": true
+        },
+        "shouldRememberPosition": false,
+        "streamProgress": {},
+        "shortDescription": "",
+        "major": {
+          "id": 0,
+          "name": "-"
+        },
+        "genre": "soundtrack",
+        "realId": "65093322",
+        "disclaimers": [],
+        "artists": [
+          {
+            "id": "9088817",
+            "name": "Лос Гадюкус",
+            "various": false,
+            "isComposer": false,
+            "isAvailable": true,
+            "trailer": {
+              "available": false
+            },
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F3334966\u002Fc9e4d14b.p.9088817\u002F%%",
+            "coverType": "from-artist-photos",
+            "pendingLikesCount": 0,
+            "disclaimers": [],
+            "averageColor": ""
+          }
+        ],
+        "albums": [
+          {
+            "id": 10509414,
+            "title": "Змееста",
+            "type": "single",
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2427101\u002F219fe4c8.a.10509414-1\u002F%%",
+            "averageColor": "",
+            "year": 2020,
+            "isAvailable": true,
+            "availableForOptions": [
+              "bookmate"
+            ],
+            "availableForPremiumUsers": true,
+            "genre": "soundtrack",
+            "trackPosition": {
+              "volume": 1,
+              "index": 1
+            },
+            "trackCount": 1,
+            "bestAlbumTracks": [],
+            "trailer": {
+              "available": false
+            },
+            "listeningFinished": false,
+            "likesCount": 7,
+            "pendingLikesCount": 0,
+            "disclaimers": []
+          }
+        ]
+      },
+      "loadingState": "RESOLVE"
+    }
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F5",
+    "value": {
+      "id": "65093039",
+      "albumId": 10509356,
+      "key": "65093039-5",
+      "data": {
+        "id": "65093039",
+        "isAvailable": true,
+        "isRemoved": false,
+        "title": "Укус любви",
+        "trackSource": "OWN",
+        "durationMs": 146640,
+        "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2411511\u002F6c61bce1.a.10509356-1\u002F%%",
+        "averageColor": "#d65b6e",
+        "albumId": 10509356,
+        "type": "music",
+        "hasLyrics": false,
+        "hasSyncLyrics": false,
+        "trailer": {
+          "available": true
+        },
+        "shouldRememberPosition": false,
+        "streamProgress": {},
+        "shortDescription": "",
+        "major": {
+          "id": 0,
+          "name": "-"
+        },
+        "genre": "soundtrack",
+        "realId": "65093039",
+        "disclaimers": [
+          "explicit",
+          "explicitIcon:671a23afcec5646906723a54",
+          "descriptionText:67370c8e13b92b0a60256675"
+        ],
+        "artists": [
+          {
+            "id": "9088779",
+            "name": "NIZMEIKA",
+            "various": false,
+            "isComposer": false,
+            "isAvailable": true,
+            "trailer": {
+              "available": false
+            },
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F3316841\u002F05b6971a.p.9088779\u002F%%",
+            "coverType": "from-artist-photos",
+            "pendingLikesCount": 0,
+            "disclaimers": [],
+            "averageColor": ""
+          }
+        ],
+        "albums": [
+          {
+            "id": 10509356,
+            "title": "Укус любви",
+            "type": "single",
+            "coverUri": "avatars.yandex.net\u002Fget-music-content\u002F2411511\u002F6c61bce1.a.10509356-1\u002F%%",
+            "averageColor": "",
+            "year": 2020,
+            "isAvailable": true,
+            "availableForOptions": [
+              "bookmate"
+            ],
+            "availableForPremiumUsers": true,
+            "genre": "soundtrack",
+            "trackPosition": {
+              "volume": 1,
+              "index": 1
+            },
+            "trackCount": 1,
+            "bestAlbumTracks": [],
+            "trailer": {
+              "available": false
+            },
+            "listeningFinished": false,
+            "likesCount": 16,
+            "pendingLikesCount": 0,
+            "disclaimers": [
+              "explicit",
+              "explicitIcon:671a23afcec5646906723a54",
+              "descriptionText:67370c8e13b92b0a60256675"
+            ]
+          }
+        ]
+      },
+      "loadingState": "RESOLVE"
+    }
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002FloadingState",
+    "value": "RESOLVE"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F0\u002Fdata\u002FtrackType",
+    "value": "music"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F1\u002Fdata\u002FtrackType",
+    "value": "music"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F2\u002Fdata\u002FtrackType",
+    "value": "music"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F3\u002Fdata\u002FtrackType",
+    "value": "music"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F4\u002Fdata\u002FtrackType",
+    "value": "music"
+  },
+  {
+    "op": "replace",
+    "path": "\u002Fplaylist\u002Fitems\u002F5\u002Fdata\u002FtrackType",
+    "value": "music"
+  }
+]
