@@ -148,10 +148,10 @@ func (s *server) yandexPlaylist() *yandexmusic.Playlist {
 	return s.savedPlaylist
 }
 
-func (s *server) yandexImportState() (*yandexmusic.Playlist, bool, error, yandexmusic.TrackProgress) {
+func (s *server) yandexImportState() (*yandexmusic.Playlist, bool, yandexmusic.TrackProgress, error) {
 	s.mYandex.Lock()
 	defer s.mYandex.Unlock()
-	return s.savedPlaylist, s.yandexImporting, s.yandexImportErr, s.yandexProgress
+	return s.savedPlaylist, s.yandexImporting, s.yandexProgress, s.yandexImportErr
 }
 
 func (s *server) startYandexImport(playlist *yandexmusic.Playlist) {
@@ -573,7 +573,7 @@ func (s *server) handleHome(w http.ResponseWriter, _ *http.Request) {
 //   - если поиск завершен, добавляется ссылка на создание Spotify-плейлиста.
 func (s *server) getYandexList() string {
 	list := ""
-	playlist, importing, importErr, progress := s.yandexImportState()
+	playlist, importing, progress, importErr := s.yandexImportState()
 	if importing {
 		if progress.Total == 0 {
 			return "<p><strong>Importing Yandex playlist...</strong></p>"
