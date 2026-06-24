@@ -5,8 +5,8 @@ import (
 	b64 "encoding/base64"
 	"flag"
 	"fmt"
+	"net/http"
 
-	"github.com/valyala/fasthttp"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 )
 
@@ -46,7 +46,7 @@ func redirectURL() string {
 // Start создает Spotify OAuth-клиент и запускает HTTP-сервер приложения.
 //
 // Returns:
-//   - error: ошибка запуска fasthttp-сервера.
+//   - error: ошибка запуска HTTP-сервера.
 func Start() error {
 	auth := spotifyauth.New(spotifyauth.WithRedirectURL(redirectURL()), spotifyauth.WithScopes(
 		spotifyauth.ScopeUserReadPlaybackState,
@@ -65,5 +65,5 @@ func Start() error {
 	s := newServer(auth, "spotifyApi")
 	fmt.Printf("Starting at http://127.0.0.1:%d/\n", port)
 	fmt.Printf("Redirect uri %s\n", redirectURL())
-	return fasthttp.ListenAndServe(fmt.Sprintf(":%d", port), s.ServeHTTP)
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), s)
 }
