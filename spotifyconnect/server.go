@@ -28,6 +28,7 @@ const (
 	spotifyMaxConcurrentRequests = 4
 	spotifyRequestInterval       = 250 * time.Millisecond
 	spotifyMaxSearchRetries      = 3
+	spotifySearchTimeout         = 30 * time.Second
 	spotifyLibraryBatchSize      = 50
 )
 
@@ -297,6 +298,16 @@ func (s *server) setSpotifySearching(searching bool) {
 	s.spotifySearching = searching
 }
 
+func (s *server) tryStartSpotifySearch() bool {
+	s.mSearch.Lock()
+	defer s.mSearch.Unlock()
+	if s.spotifySearching {
+		return false
+	}
+	s.spotifySearching = true
+	return true
+}
+
 func (s *server) isSpotifySearching() bool {
 	s.mSearch.Lock()
 	defer s.mSearch.Unlock()
@@ -312,7 +323,6 @@ func (s *server) isSpotifySearching() bool {
 //   - если пользователь Spotify не авторизован, поиск не выполняется.
 //   - если трек не найден, в карту записывается marker-трек с ID "nil".
 func (s *server) searchTrackInSpotify(yt *yandexmusic.SingleTrack) {
-	ctx := context.Background()
 	if len(s.currentUser.ID) == 0 {
 		return
 	}
@@ -323,7 +333,9 @@ func (s *server) searchTrackInSpotify(yt *yandexmusic.SingleTrack) {
 	var foundTrack spotify.FullTrack
 	for _, artist := range yt.Artists {
 		searchString := strings.Join([]string{yt.Title, artist.String()}, " ")
+		ctx, cancel := context.WithTimeout(context.Background(), spotifySearchTimeout)
 		res, err := s.searchSpotify(ctx, searchString)
+		cancel()
 		if err != nil {
 			s.logger.Error(err)
 			continue
@@ -335,6 +347,9 @@ func (s *server) searchTrackInSpotify(yt *yandexmusic.SingleTrack) {
 	}
 	if len(foundTrack.ID) == 0 {
 		foundTrack = spotify.FullTrack{SimpleTrack: spotify.SimpleTrack{ID: "nil"}}
+		s.logger.Infof("spotify search result: yandex track %s not found", yt.ID)
+	} else {
+		s.logger.Infof("spotify search result: yandex track %s -> spotify track %s", yt.ID, foundTrack.ID)
 	}
 	s.mMap.Lock()
 	s.yandexSpotify[yt.ID] = foundTrack
@@ -362,20 +377,40 @@ func (s *server) searchTracksInSpotifyChan(tracksChan chan yandexmusic.SingleTra
 //   - если предыдущий поиск еще идет, новый запуск игнорируется.
 func (s *server) searchTracksInSpotify() {
 	if len(s.currentUser.ID) == 0 {
+		s.logger.Infoln("spotify search skipped: user is not authorized")
 		return
 	}
 	playlist := s.yandexPlaylist()
 	if playlist == nil {
+		s.logger.Infoln("spotify search skipped: yandex playlist is not imported")
 		return
 	}
-	if s.isSpotifySearching() {
+	if !s.tryStartSpotifySearch() {
+		s.logger.Infoln("spotify search skipped: search is already running")
 		return
 	}
-	s.setSpotifySearching(true)
 	defer s.setSpotifySearching(false)
 
 	s.nowSearchTrack = 0
-	tracksChan := make(chan yandexmusic.SingleTrack)
+	pendingTracks := make([]yandexmusic.SingleTrack, 0, len(playlist.Tracks))
+	for _, yt := range playlist.Tracks {
+		if s.hasSpotifySearchResult(yt.ID) {
+			continue
+		}
+		pendingTracks = append(pendingTracks, yt)
+	}
+	if len(pendingTracks) == 0 {
+		s.logger.Infoln("spotify search skipped: no pending tracks")
+		return
+	}
+	s.logger.Infof("spotify search started: %d pending tracks", len(pendingTracks))
+
+	tracksChan := make(chan yandexmusic.SingleTrack, len(pendingTracks))
+	for _, yt := range pendingTracks {
+		tracksChan <- yt
+	}
+	close(tracksChan)
+
 	var wg sync.WaitGroup
 	for i := 0; i < s.maxThreads; i++ {
 		wg.Add(1)
@@ -384,14 +419,8 @@ func (s *server) searchTracksInSpotify() {
 			s.searchTracksInSpotifyChan(tracksChan)
 		}()
 	}
-	for _, yt := range playlist.Tracks {
-		if s.hasSpotifySearchResult(yt.ID) {
-			continue
-		}
-		tracksChan <- yt
-	}
-	close(tracksChan)
 	wg.Wait()
+	s.logger.Infoln("spotify search finished")
 }
 
 // ServeHTTP передает net/http-запрос в роутер приложения.
@@ -520,7 +549,7 @@ func (s *server) handleCallbackSpotify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := spotify.New(s.auth.Client(r.Context(), tok), spotify.WithRetry(true))
+	client := spotify.New(s.auth.Client(r.Context(), tok))
 	s.mClient.Lock()
 	defer s.mClient.Unlock()
 	s.spotifyClient = client
