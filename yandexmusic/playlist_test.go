@@ -86,6 +86,47 @@ func TestNewPlaylistFromLink(t *testing.T) {
 	assert.Equal(t, "https://music.yandex.ru/playlists/"+playlistID, playlist.SourceURL)
 }
 
+func TestYandexAPIPlaylistPathKeepsLKPrefix(t *testing.T) {
+	playlist, err := NewPlaylistFromLink("https://music.yandex.ru/playlists/lk.be681207-ee6c-4b4b-9ba4-9297945bea37")
+	require.NoError(t, err)
+	require.NotNil(t, playlist)
+
+	assert.Equal(t, "lk.be681207-ee6c-4b4b-9ba4-9297945bea37", playlist.UUID)
+	assert.Equal(t, "/playlist/lk.be681207-ee6c-4b4b-9ba4-9297945bea37", playlist.apiPlaylistPath())
+}
+
+func TestDecodeYandexAPIPlaylistResponseNestedPlaylist(t *testing.T) {
+	var response yandexAPIPlaylistResponse
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"result": {
+			"playlist": {
+				"playlistUuid": "lk.be681207-ee6c-4b4b-9ba4-9297945bea37",
+				"title": "Liked playlist",
+				"trackIds": [99417193]
+			}
+		}
+	}`), &response))
+
+	assert.Equal(t, "Liked playlist", response.Result.Title)
+	assert.Equal(t, []string{"99417193"}, response.Result.TrackIDs())
+}
+
+func TestYandexAPIPlaylistTrackIDs(t *testing.T) {
+	var playlist yandexAPIPlaylist
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"trackIds": ["99417193", 26219985],
+		"tracks": [{"id": 1}]
+	}`), &playlist))
+
+	assert.Equal(t, []string{"99417193", "26219985"}, playlist.TrackIDs())
+
+	require.NoError(t, json.Unmarshal([]byte(`{
+		"tracks": [{"id": "99417193"}, {"id": 26219985}]
+	}`), &playlist))
+
+	assert.Equal(t, []string{"99417193", "26219985"}, playlist.TrackIDs())
+}
+
 func TestFetchYandexTracksBatchesTrackIDs(t *testing.T) {
 	var requests [][]string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

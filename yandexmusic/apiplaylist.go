@@ -9,6 +9,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -28,6 +29,8 @@ var (
 
 type yandexAPIPlaylistResponse struct {
 	Result yandexAPIPlaylist `json:"result"`
+	Error  *yandexAPIError   `json:"error"`
+	raw    []byte
 }
 
 type yandexAPIPlaylist struct {
@@ -36,6 +39,7 @@ type yandexAPIPlaylist struct {
 	Kind         int64                 `json:"kind"`
 	Title        string                `json:"title"`
 	Description  string                `json:"description"`
+	TrackIDsList []yandexAPITrackID    `json:"trackIds"`
 	Tracks       []yandexAPITrackEntry `json:"tracks"`
 }
 
@@ -45,7 +49,14 @@ type yandexAPIOwner struct {
 }
 
 type yandexAPITrackEntry struct {
-	ID int64 `json:"id"`
+	ID yandexAPITrackID `json:"id"`
+}
+
+type yandexAPITrackID string
+
+type yandexAPIError struct {
+	Name    string `json:"name"`
+	Message string `json:"message"`
 }
 
 func (p *Playlist) loadFromYandexAPI() error {
@@ -78,7 +89,7 @@ func (p *Playlist) fetchAPIPlaylist() (yandexAPIPlaylist, error) {
 		return yandexAPIPlaylist{}, errors.New("playlist api id is empty")
 	}
 
-	req, err := http.NewRequest(http.MethodGet, yandexMusicAPIBaseURL+"/playlist/"+playlistID, nil)
+	req, err := http.NewRequest(http.MethodGet, yandexMusicAPIBaseURL+p.apiPlaylistPath(), nil)
 	if err != nil {
 		return yandexAPIPlaylist{}, err
 	}
@@ -92,10 +103,86 @@ func (p *Playlist) fetchAPIPlaylist() (yandexAPIPlaylist, error) {
 	if err := doYandexJSONRequest(req, &response); err != nil {
 		return yandexAPIPlaylist{}, err
 	}
+	if response.Error != nil {
+		return yandexAPIPlaylist{}, fmt.Errorf(
+			"yandex api error %s: %s",
+			response.Error.Name,
+			response.Error.Message,
+		)
+	}
 	if response.Result.Title == "" {
-		return yandexAPIPlaylist{}, errors.New("playlist title is empty")
+		return yandexAPIPlaylist{}, fmt.Errorf(
+			"playlist title is empty for %s; response keys: %s",
+			req.URL.Path,
+			jsonObjectKeys(response.raw),
+		)
 	}
 	return response.Result, nil
+}
+
+func (r *yandexAPIPlaylistResponse) UnmarshalJSON(data []byte) error {
+	r.raw = append(r.raw[:0], data...)
+
+	var wrapper struct {
+		Result json.RawMessage `json:"result"`
+		Error  *yandexAPIError `json:"error"`
+	}
+	if err := json.Unmarshal(data, &wrapper); err != nil {
+		return err
+	}
+	r.Error = wrapper.Error
+
+	if len(wrapper.Result) > 0 && string(wrapper.Result) != "null" {
+		playlist, err := decodeYandexAPIPlaylist(wrapper.Result)
+		if err != nil {
+			return err
+		}
+		r.Result = playlist
+		return nil
+	}
+
+	playlist, err := decodeYandexAPIPlaylist(data)
+	if err != nil {
+		return err
+	}
+	r.Result = playlist
+	return nil
+}
+
+func decodeYandexAPIPlaylist(data []byte) (yandexAPIPlaylist, error) {
+	var playlist yandexAPIPlaylist
+	if err := json.Unmarshal(data, &playlist); err != nil {
+		return yandexAPIPlaylist{}, err
+	}
+	if playlist.Title != "" {
+		return playlist, nil
+	}
+
+	var wrapper struct {
+		Playlist yandexAPIPlaylist `json:"playlist"`
+	}
+	if err := json.Unmarshal(data, &wrapper); err != nil {
+		return yandexAPIPlaylist{}, err
+	}
+	if wrapper.Playlist.Title != "" {
+		return wrapper.Playlist, nil
+	}
+
+	return playlist, nil
+}
+
+func jsonObjectKeys(data []byte) []string {
+	var obj map[string]any
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return nil
+	}
+
+	keys := make([]string, 0, len(obj))
+	for key := range obj {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func (p *Playlist) apiPlaylistID() string {
@@ -108,6 +195,16 @@ func (p *Playlist) apiPlaylistID() string {
 	return ""
 }
 
+func (p *Playlist) apiPlaylistPath() string {
+	if p.UUID != "" {
+		return "/playlist/" + p.apiPlaylistID()
+	}
+	if p.Owner != "" && p.PlaylistID != 0 {
+		return fmt.Sprintf("/users/%s/playlists/%d", p.Owner, p.PlaylistID)
+	}
+	return "/playlist/" + p.apiPlaylistID()
+}
+
 func (p *Playlist) importAPIPlaylist(playlist yandexAPIPlaylist) {
 	p.UUID = playlist.PlaylistUUID
 	p.Owner = playlist.Owner.Login
@@ -117,14 +214,41 @@ func (p *Playlist) importAPIPlaylist(playlist yandexAPIPlaylist) {
 }
 
 func (p *yandexAPIPlaylist) TrackIDs() []string {
+	if len(p.TrackIDsList) > 0 {
+		trackIDs := make([]string, 0, len(p.TrackIDsList))
+		for _, trackID := range p.TrackIDsList {
+			if trackID == "" {
+				continue
+			}
+			trackIDs = append(trackIDs, string(trackID))
+		}
+		return trackIDs
+	}
+
 	trackIDs := make([]string, 0, len(p.Tracks))
 	for _, track := range p.Tracks {
-		if track.ID == 0 {
+		if track.ID == "" {
 			continue
 		}
-		trackIDs = append(trackIDs, strconv.FormatInt(track.ID, 10))
+		trackIDs = append(trackIDs, string(track.ID))
 	}
 	return trackIDs
+}
+
+func (id *yandexAPITrackID) UnmarshalJSON(data []byte) error {
+	var stringID string
+	if err := json.Unmarshal(data, &stringID); err == nil {
+		*id = yandexAPITrackID(stringID)
+		return nil
+	}
+
+	var intID int64
+	if err := json.Unmarshal(data, &intID); err == nil {
+		*id = yandexAPITrackID(strconv.FormatInt(intID, 10))
+		return nil
+	}
+
+	return fmt.Errorf("unexpected track id value %s", string(data))
 }
 
 func fetchYandexTracks(trackIDs []string, retpath string) ([]SingleTrack, error) {
