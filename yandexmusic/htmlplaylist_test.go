@@ -21,6 +21,10 @@ func TestGetYandexState(t *testing.T) {
 	yandexState, err := getYandexState(arrays)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, yandexState)
+	//if f, err := os.Create(fmt.Sprintf("testplaylists/%s.json", playlistID)); err == nil {
+	//	json.NewEncoder(f).Encode(yandexState)
+	//	f.Close()
+	//}
 	playlist, ok := yandexState["playlist"].(map[string]any)
 	require.True(t, ok)
 	assert.Equal(t, playlistID, playlist["uuid"])
