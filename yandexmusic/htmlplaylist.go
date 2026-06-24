@@ -77,17 +77,17 @@ func getStatePatchScriptNodes(reader io.Reader) ([]stateUpdate, error) {
 	return arrays, nil
 }
 
-func getYandexState(arr []stateUpdate) (map[string][]any, error) {
-	res := make(map[string][]any)
+func getYandexState(arr []stateUpdate) (map[string]any, error) {
+	res := make(map[string]any)
 	for _, arr := range arr {
 		switch arr.Op {
 		case "replace":
-			res[arr.Path] = []any{arr.Value}
+			res[arr.Path] = arr.Value
 		case "add":
-			if _, ok := res[arr.Path]; !ok {
-				res[arr.Path] = []any{}
+			if _, ok := res[arr.Path]; ok {
+				return nil, fmt.Errorf("path %s already exists", arr.Path)
 			}
-			res[arr.Path] = append(res[arr.Path], arr.Value)
+			res[arr.Path] = arr.Value
 		default:
 			return nil, fmt.Errorf("unknown operation %s", arr.Op)
 		}
