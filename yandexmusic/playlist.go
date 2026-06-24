@@ -1,23 +1,24 @@
 package yandexmusic
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type Playlist struct {
-	Owner          string        `json:"owner"`
-	PlaylistID     int64         `json:"playlist_id"`
-	Title          string        `json:"title"`
-	Description    string        `json:"description"`
-	Tracks         []SingleTrack `json:"tracks"`
-	yandexPlaylist yandexPlaylistDataOuter
+	Owner       string        `json:"owner"`
+	PlaylistID  int64         `json:"playlist_id"`
+	UUID        string        `json:"uuid"`
+	SourceURL   string        `json:"source_url"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	Tracks      []SingleTrack `json:"tracks"`
+	imported    bool
 }
 
 // NewPlaylist создает объект плейлиста Яндекс Музыки по владельцу и идентификатору.
@@ -30,12 +31,10 @@ type Playlist struct {
 //   - *Playlist: плейлист без загруженных метаданных и треков.
 func NewPlaylist(owner string, playlistID int64) *Playlist {
 	return &Playlist{
-		owner,
-		playlistID,
-		"",
-		"",
-		[]SingleTrack{},
-		yandexPlaylistDataOuter{},
+		Owner:      owner,
+		PlaylistID: playlistID,
+		SourceURL:  yandexMusicPlaylistPageURL(owner, playlistID),
+		Tracks:     []SingleTrack{},
 	}
 }
 
@@ -52,76 +51,89 @@ func NewPlaylist(owner string, playlistID int64) *Playlist {
 //   - пустая ссылка возвращает nil, nil.
 //   - ссылка без сегмента playlists возвращает ошибку "invalid link".
 func NewPlaylistFromLink(playlistLink string) (*Playlist, error) {
-	var owner string
-	var playlistID int64
-	if len(playlistLink) > 0 {
-		re := regexp.MustCompile("/+")
-		splitURL := re.Split(playlistLink, -1)
-		playlistsIndex := len(splitURL)
-		for i, urlPart := range splitURL {
-			if urlPart == "playlists" {
-				playlistsIndex = i
-				break
-			}
+	if playlistLink == "" {
+		return nil, nil
+	}
+
+	pageURL, err := normalizeYandexPlaylistURL(playlistLink)
+	if err != nil {
+		return nil, err
+	}
+
+	re := regexp.MustCompile("/+")
+	splitPath := re.Split(strings.Trim(pageURL.Path, "/"), -1)
+	playlistsIndex := len(splitPath)
+	for i, urlPart := range splitPath {
+		if urlPart == "playlists" {
+			playlistsIndex = i
+			break
 		}
-		if playlistsIndex < len(splitURL)-1 {
-			owner = splitURL[playlistsIndex-1]
-			var err error
-			playlistID, err = strconv.ParseInt(splitURL[playlistsIndex+1], 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			return NewPlaylist(owner, playlistID), nil
-		}
+	}
+	if playlistsIndex >= len(splitPath)-1 {
 		return nil, errors.New("invalid link")
 	}
-	return nil, nil
+
+	playlist := &Playlist{
+		SourceURL: pageURL.String(),
+		Tracks:    []SingleTrack{},
+	}
+
+	playlistID := splitPath[playlistsIndex+1]
+	if parsedID, err := strconv.ParseInt(playlistID, 10, 64); err == nil {
+		playlist.PlaylistID = parsedID
+	} else {
+		playlist.UUID = playlistID
+	}
+
+	if playlistsIndex > 0 {
+		playlist.Owner = splitPath[playlistsIndex-1]
+		if playlist.Owner == "users" {
+			playlist.Owner = ""
+		}
+	}
+	return playlist, nil
 }
 
-// PlaylistURL собирает URL запроса метаданных плейлиста к Яндекс Музыке.
+// PlaylistURL возвращает URL страницы плейлиста Яндекс Музыки.
 //
 // Returns:
-//   - string: URL endpoint'а playlist.jsx с query-параметрами текущего плейлиста.
+//   - string: URL HTML-страницы плейлиста.
 func (p *Playlist) PlaylistURL() string {
-	values := url.Values{
-		"owner":           {p.Owner},
-		"kinds":           {strconv.FormatInt(p.PlaylistID, 10)},
-		"light":           {"true"},
-		"madeFor":         {""},
-		"lang":            {"ru"},
-		"external-domain": {"music.yandex.ru"},
-		"overembed":       {"false"},
+	if p.SourceURL != "" {
+		return p.SourceURL
 	}
-
-	urlArgs := values.Encode()
-	if len(urlArgs) > 0 {
-		return fmt.Sprintf("%s?%s", playlistAPI(), urlArgs)
+	if p.UUID != "" {
+		return fmt.Sprintf("https://music.yandex.ru/playlists/%s", p.UUID)
 	}
-	return playlistAPI()
+	return yandexMusicPlaylistPageURL(p.Owner, p.PlaylistID)
 }
 
-// GetPlaylistInfo загружает метаданные плейлиста из Яндекс Музыки и обновляет Playlist.
+// GetPlaylistInfo загружает HTML-страницу плейлиста из Яндекс Музыки и обновляет Playlist из window.__STATE_PATCHES__.
 //
-// Returns:
-//   - error: ошибка HTTP-запроса, декодирования JSON или закрытия response body.
+// Returns: error: ошибка HTTP-запроса, парсинга HTML-state или декодирования playlist.
 func (p *Playlist) GetPlaylistInfo() error {
 	resp, err := http.Get(p.PlaylistURL())
 	if err != nil {
 		return err
 	}
-	bodyStr, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("unexpected status code %d for %s", resp.StatusCode, p.PlaylistURL())
+	}
+
+	updates, err := getStateUpdateList(resp.Body)
 	if err != nil {
 		return err
 	}
-	if err := json.Unmarshal(bodyStr, &p.yandexPlaylist); err != nil {
+	state, err := getYandexState(updates)
+	if err != nil {
 		return err
 	}
-	if err := resp.Body.Close(); err != nil {
+	if err := p.importYandexState(state); err != nil {
 		return err
 	}
-	p.yandexPlaylist.imported = true
-	p.Title = p.yandexPlaylist.Playlist.Title
-	p.Description = p.yandexPlaylist.Playlist.Description
+	p.imported = true
 	return nil
 }
 
@@ -133,16 +145,10 @@ func (p *Playlist) GetPlaylistInfo() error {
 // Returns:
 //   - error: ошибка получения метаданных или списка треков.
 func (p *Playlist) getTracks(bypassUpdatePlaylist bool) error {
-	if !p.yandexPlaylist.imported || bypassUpdatePlaylist {
-		if err := p.GetPlaylistInfo(); err != nil {
-			return err
-		}
+	if p.imported && !bypassUpdatePlaylist {
+		return nil
 	}
-	tracks, err := p.yandexPlaylist.TrackEntries()
-	if tracks != nil {
-		p.Tracks = tracks
-	}
-	return err
+	return p.GetPlaylistInfo()
 }
 
 // GetTracks загружает треки плейлиста, используя уже загруженные метаданные при их наличии.
@@ -159,4 +165,40 @@ func (p *Playlist) GetTracks() error {
 //   - error: ошибка загрузки метаданных или треков.
 func (p *Playlist) GetAllBypass() error {
 	return p.getTracks(true)
+}
+
+func normalizeYandexPlaylistURL(playlistLink string) (*url.URL, error) {
+	playlistLink = strings.TrimSpace(playlistLink)
+	if playlistLink == "" {
+		return nil, errors.New("invalid link")
+	}
+	if strings.HasPrefix(playlistLink, "/") {
+		playlistLink = "https://music.yandex.ru" + playlistLink
+	}
+	if strings.HasPrefix(playlistLink, "playlists/") || strings.HasPrefix(playlistLink, "users/") {
+		playlistLink = "https://music.yandex.ru/" + playlistLink
+	}
+	if !strings.Contains(playlistLink, "://") {
+		playlistLink = "https://" + strings.TrimLeft(playlistLink, "/")
+	}
+	parsedURL, err := url.Parse(playlistLink)
+	if err != nil {
+		return nil, err
+	}
+	if parsedURL.Host == "" {
+		return nil, errors.New("invalid link")
+	}
+	if parsedURL.Scheme == "" {
+		parsedURL.Scheme = "https"
+	}
+	parsedURL.RawQuery = ""
+	parsedURL.Fragment = ""
+	return parsedURL, nil
+}
+
+func yandexMusicPlaylistPageURL(owner string, playlistID int64) string {
+	if owner == "" || playlistID == 0 {
+		return "https://music.yandex.ru"
+	}
+	return fmt.Sprintf("https://music.yandex.ru/users/%s/playlists/%d", owner, playlistID)
 }
