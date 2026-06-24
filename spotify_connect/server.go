@@ -4,20 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	routing "github.com/qiangxue/fasthttp-routing"
-	"github.com/sirupsen/logrus"
-	"github.com/valyala/fasthttp"
-	"github.com/valyala/fasthttp/fasthttpadaptor"
-	"github.com/vitalick/go-d2editor"
-	"github.com/zmb3/spotify/v2"
-	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"net/http"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	routing "github.com/qiangxue/fasthttp-routing"
+	"github.com/sirupsen/logrus"
+	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
+	"github.com/zmb3/spotify/v2"
+	spotifyauth "github.com/zmb3/spotify/v2/auth"
+
 	"yandexToSpotify/yandex_music"
 )
 
@@ -76,9 +77,9 @@ func (s *server) quantityOfTracks() *tracksQuantity {
 		s.mMap.Lock()
 		if spotifyTrack := s.yandexSpotify[track.ID]; spotifyTrack.ID != "" {
 			if spotifyTrack.ID == "nil" {
-				tracksNotFoundedSpotify += 1
+				tracksNotFoundedSpotify++
 			} else {
-				tracksFoundedSpotify += 1
+				tracksFoundedSpotify++
 			}
 		}
 		s.mMap.Unlock()
@@ -104,7 +105,7 @@ func (s *server) getTrack() *yandex_music.SingleTrack {
 	if s.nowSearchTrack >= len(s.savedPlaylist.Tracks) {
 		return nil
 	}
-	s.nowSearchTrack += 1
+	s.nowSearchTrack++
 	return &s.savedPlaylist.Tracks[s.nowSearchTrack-1]
 }
 
@@ -170,7 +171,6 @@ func (s *server) searchTracksInSpotify() {
 		tracksChan <- yt
 	}
 	close(tracksChan)
-
 }
 
 func (s *server) ServeHTTP(ctx *fasthttp.RequestCtx) {
@@ -196,7 +196,6 @@ func (s *server) configureRouter() {
 	yaMusic.Get("/liked_playlist", s.handleSpotifySaved)
 	yaMusic.Get("/playlist/<id>", s.handleSpotifyPlaylist)
 	yaMusic.Get("/playlist/<id>/<page>", s.handleSpotifyPlaylist)
-	yaMusic.Post("/testd2s", s.setContentTypeJSON, s.handleTestD2s)
 }
 
 func (s *server) setContentTypeHTML(ctx *routing.Context) error {
@@ -349,14 +348,15 @@ func (s *server) getYandexList() string {
 	threadsFinished := 0
 	for _, finish := range s.threadsFinish {
 		if finish {
-			threadsFinished += 1
+			threadsFinished++
 		}
 	}
 	if threadsFinished == len(s.threadsFinish) {
-		list += fmt.Sprintf("<h5><a href=\"/ya_music/search\">Search on Spotify</a></h5>")
+		list += "<h5><a href=\"/ya_music/search\">Search on Spotify</a></h5>"
 	}
-	if tracksQuantity.foundedSpotify+tracksQuantity.notFoundedSpotify == tracksQuantity.yandex && tracksQuantity.foundedSpotify > 0 {
-		list += fmt.Sprintf("<h5><a href=\"/ya_music/create_playlist\">Add playlist to Spotify</a></h5>")
+	if tracksQuantity.foundedSpotify+tracksQuantity.notFoundedSpotify == tracksQuantity.yandex &&
+		tracksQuantity.foundedSpotify > 0 {
+		list += "<h5><a href=\"/ya_music/create_playlist\">Add playlist to Spotify</a></h5>"
 	}
 	list += tracksList
 	return list
@@ -428,7 +428,14 @@ func (s *server) handleCreatePlaylist(ctx *routing.Context) error {
 		s.respond(ctx, http.StatusOK, page)
 		return nil
 	}
-	playlist, err := s.spotifyClient.CreatePlaylistForUser(context.Background(), s.currentUser.ID, playlistName, playlistDescription, false, false)
+	playlist, err := s.spotifyClient.CreatePlaylistForUser(
+		context.Background(),
+		s.currentUser.ID,
+		playlistName,
+		playlistDescription,
+		false,
+		false,
+	)
 	if err != nil {
 		s.logger.Errorln(err)
 		page = fmt.Sprintf("<p>%v</p>", err) + page
@@ -473,7 +480,7 @@ const pageSize = 10
 
 func (s *server) handleSpotifyPlaylists(ctx *routing.Context) error {
 	page := "<h1>Playlists</h1>"
-	var err error = nil
+	var err error
 	if s.currentUser == nil || s.currentUser.ID == "" {
 		ctx.Redirect("/", http.StatusTemporaryRedirect)
 		return nil
@@ -488,7 +495,11 @@ func (s *server) handleSpotifyPlaylists(ctx *routing.Context) error {
 	}
 	page += fmt.Sprintf("<h2>Page %d</h2>", pageNum)
 	page += "<div>"
-	playlists, err := s.spotifyClient.CurrentUsersPlaylists(context.Background(), spotify.Limit(pageSize), spotify.Offset(pageSize*(pageNum-1)))
+	playlists, err := s.spotifyClient.CurrentUsersPlaylists(
+		context.Background(),
+		spotify.Limit(pageSize),
+		spotify.Offset(pageSize*(pageNum-1)),
+	)
 	if err != nil {
 		page += err.Error()
 		page += "</div>"
@@ -507,7 +518,7 @@ func (s *server) handleSpotifyPlaylists(ctx *routing.Context) error {
 	if pageNum > 1 {
 		page += fmt.Sprintf(`<a href="/ya_music/playlists/%d">Prev</a>`, pageNum-1)
 	}
-	if pageSize*(pageNum-1)+len(playlists.Playlists) < playlists.Total {
+	if pageSize*(pageNum-1)+len(playlists.Playlists) < int(playlists.Total) {
 		page += fmt.Sprintf(`<a href="/ya_music/playlists/%d">Next</a>`, pageNum+1)
 	}
 	page += "</div>"
@@ -518,7 +529,7 @@ func (s *server) handleSpotifyPlaylists(ctx *routing.Context) error {
 
 func (s *server) handleSpotifyPlaylist(ctx *routing.Context) error {
 	page := "<h1>Playlist</h1>"
-	var err error = nil
+	var err error
 	if s.currentUser == nil || s.currentUser.ID == "" {
 		ctx.Redirect("/", http.StatusTemporaryRedirect)
 		return nil
@@ -539,7 +550,12 @@ func (s *server) handleSpotifyPlaylist(ctx *routing.Context) error {
 	page += fmt.Sprintf("<h2>ID %s</h2>", idStr)
 	page += fmt.Sprintf("<h2>Page %d</h2>", pageNum)
 	page += "<div>"
-	playlist, err := s.spotifyClient.GetPlaylistTracks(context.Background(), spotify.ID(idStr), spotify.Limit(100), spotify.Offset(100*(pageNum-1)))
+	playlist, err := s.spotifyClient.GetPlaylistTracks(
+		context.Background(),
+		spotify.ID(idStr),
+		spotify.Limit(100),
+		spotify.Offset(100*(pageNum-1)),
+	)
 	if err != nil {
 		page += err.Error()
 		page += "</div>"
@@ -562,7 +578,7 @@ func (s *server) handleSpotifyPlaylist(ctx *routing.Context) error {
 	if pageNum > 1 {
 		page += fmt.Sprintf(`<a href="/ya_music/playlist/%s/%d">Prev</a>`, idStr, pageNum-1)
 	}
-	if 100*(pageNum-1)+len(playlist.Tracks) < playlist.Total {
+	if 100*(pageNum-1)+len(playlist.Tracks) < int(playlist.Total) {
 		page += fmt.Sprintf(`<a href="/ya_music/playlist/%s/%d">Next</a>`, idStr, pageNum+1)
 	}
 	page += "</div>"
@@ -581,7 +597,11 @@ func (s *server) handleSpotifySaved(ctx *routing.Context) error {
 	page += "<div>"
 	page += "<ul>"
 	for {
-		playlist, err := s.spotifyClient.CurrentUsersTracks(context.Background(), spotify.Limit(pageSize), spotify.Offset(pageSize*(pageNum-1)))
+		playlist, err := s.spotifyClient.CurrentUsersTracks(
+			context.Background(),
+			spotify.Limit(pageSize),
+			spotify.Offset(pageSize*(pageNum-1)),
+		)
 		if err != nil {
 			break
 		}
@@ -594,10 +614,10 @@ func (s *server) handleSpotifySaved(ctx *routing.Context) error {
 			page += fmt.Sprintf("%s - %s", strings.Join(artists, ", "), track.Name)
 			page += "</li>"
 		}
-		if pageSize*(pageNum-1)+len(playlist.Tracks) >= playlist.Total {
+		if pageSize*(pageNum-1)+len(playlist.Tracks) >= int(playlist.Total) {
 			break
 		}
-		pageNum += 1
+		pageNum++
 		time.Sleep(time.Millisecond * 100)
 	}
 
@@ -605,27 +625,6 @@ func (s *server) handleSpotifySaved(ctx *routing.Context) error {
 	page += "</div>"
 
 	s.respond(ctx, http.StatusOK, page)
-	return nil
-}
-
-func (s *server) handleTestD2s(ctx *routing.Context) error {
-	file, err := ctx.FormFile("d2s")
-	if err != nil {
-		s.error(ctx, fasthttp.StatusUnprocessableEntity, err)
-		return nil
-	}
-	f, err := file.Open()
-	if err != nil {
-		s.error(ctx, fasthttp.StatusUnprocessableEntity, err)
-		return nil
-	}
-	defer f.Close()
-	c, err := d2editor.NewCharacter(f)
-	if err != nil {
-		s.error(ctx, fasthttp.StatusUnprocessableEntity, err)
-		return nil
-	}
-	s.respondJSON(ctx, fasthttp.StatusOK, c)
 	return nil
 }
 
@@ -654,7 +653,7 @@ func (s *server) respond(ctx *routing.Context, code int, data string) {
 	_, _ = ctx.WriteString(data)
 }
 
-func (s *server) respondJSON(ctx *routing.Context, code int, data interface{}) {
+func (s *server) respondJSON(ctx *routing.Context, code int, data any) {
 	ctx.SetStatusCode(code)
 	enc := json.NewEncoder(ctx)
 	enc.Encode(data)

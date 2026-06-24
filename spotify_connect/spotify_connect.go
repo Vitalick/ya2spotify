@@ -4,6 +4,7 @@ import (
 	b64 "encoding/base64"
 	"flag"
 	"fmt"
+
 	"github.com/valyala/fasthttp"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 )

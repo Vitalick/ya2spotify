@@ -1,0 +1,109 @@
+version: "2"
+
+linters:
+  default: none
+
+  enable:
+    - govet
+    - revive
+
+  exclusions:
+    paths:
+      - ".*_gen\\.go$"
+      - ".*generated.*\\.go$"
+      - "^\\.cache/.*"
+
+  settings:
+    revive:
+      enable-all-rules: true
+      rules:
+        - name: import-alias-naming
+          severity: warning
+          arguments:
+            - "^[a-z][a-zA-Z0-9_]{0,}$"
+        - name: enforce-switch-style
+          severity: warning
+          arguments: ["allowNoDefault"]
+        - name: unhandled-error
+          severity: warning
+          arguments:
+            - "^fmt.Print(f|ln)?"
+        - name: max-control-nesting
+          severity: warning
+          arguments: [7]
+        - name: filename-format
+          severity: warning
+          arguments:
+            - "^[_a-z][_a-z0-9]*(\\.(generated|gen))?\\.go$"
+        - name: unused-parameter
+          severity: warning
+          exclude:
+            - "TEST"
+          arguments:
+            - allow-regex: "^_"
+        - name: exported
+          disabled: true
+        - name: line-length-limit
+          disabled: true
+        - name: cognitive-complexity
+          disabled: true
+        - name: cyclomatic
+          disabled: true
+        - name: unsecure-url-scheme
+          disabled: true
+        - name: errorf
+          disabled: true
+        - name: flag-parameter
+          disabled: true
+        - name: package-directory-mismatch
+          disabled: true
+        - name: comment-spacings
+          disabled: true
+        - name: blank-imports
+          disabled: true
+        - name: unused-receiver
+          disabled: true
+        - name: var-naming
+          disabled: true
+        - name: add-constant
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: max-public-structs
+          disabled: true
+        - name: confusing-naming
+          disabled: true
+        - name: error-naming
+          disabled: true
+        - name: function-length
+          disabled: true
+        - name: use-waitgroup-go
+          disabled: true
+        - name: argument-limit
+          disabled: true
+        - name: function-result-limit
+          disabled: true
+
+formatters:
+  enable:
+    - gofmt
+    - golines
+    - gci
+
+  exclusions:
+    paths:
+      - ".*_gen\\.go$"
+      - ".*generated.*\\.go$"
+      - "^\\.cache/.*"
+
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - localmodule
+      custom-order: true
+    golines:
+      max-len: 120
+      shorten-comments: true
+      reformat-tags: false

@@ -16,7 +16,7 @@ type Playlist struct {
 	Title          string        `json:"title"`
 	Description    string        `json:"description"`
 	Tracks         []SingleTrack `json:"tracks"`
-	yandexPlaylist *yandexPlaylistData
+	yandexPlaylist *yandexPlaylistDataOuter
 }
 
 func NewPlaylist(owner string, playlistId int64) *Playlist {
@@ -26,7 +26,7 @@ func NewPlaylist(owner string, playlistId int64) *Playlist {
 		"",
 		"",
 		[]SingleTrack{},
-		&yandexPlaylistData{},
+		&yandexPlaylistDataOuter{},
 	}
 }
 

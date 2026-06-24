@@ -8,11 +8,13 @@ import (
 )
 
 type yandexPlaylistData struct {
-	Playlist struct {
-		Title       string   `json:"title"`
-		Description string   `json:"description"`
-		TrackIds    []string `json:"trackIds"`
-	} `json:"playlist"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	TrackIds    []string `json:"trackIds"`
+}
+
+type yandexPlaylistDataOuter struct {
+	Playlist yandexPlaylistData `json:"playlist"`
 	imported bool
 }
 
@@ -23,11 +25,11 @@ type postDataTrackEntries struct {
 	OverEmbedded   bool   `json:"overembed"`
 }
 
-func (y *yandexPlaylistData) formattedTrackIds() string {
+func (y *yandexPlaylistDataOuter) formattedTrackIds() string {
 	return strings.Join(y.Playlist.TrackIds, ",")
 }
 
-func (y *yandexPlaylistData) dataTrackEntries() *postDataTrackEntries {
+func (y *yandexPlaylistDataOuter) dataTrackEntries() *postDataTrackEntries {
 	return &postDataTrackEntries{
 		y.formattedTrackIds(),
 		"ru",
@@ -36,7 +38,7 @@ func (y *yandexPlaylistData) dataTrackEntries() *postDataTrackEntries {
 	}
 }
 
-func (y *yandexPlaylistData) TrackEntries() ([]SingleTrack, error) {
+func (y *yandexPlaylistDataOuter) TrackEntries() ([]SingleTrack, error) {
 	json_data, err := json.Marshal(*y.dataTrackEntries())
 
 	if err != nil {
