@@ -3,6 +3,7 @@ package yandexmusic
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"regexp"
 	"strings"
@@ -76,6 +77,20 @@ func getStatePatchScriptNodes(reader io.Reader) ([]stateUpdate, error) {
 	return arrays, nil
 }
 
-func getYandexState() {
-
+func getYandexState(arr []stateUpdate) (map[string][]any, error) {
+	res := make(map[string][]any)
+	for _, arr := range arr {
+		switch arr.Op {
+		case "replace":
+			res[arr.Path] = []any{arr.Value}
+		case "add":
+			if _, ok := res[arr.Path]; !ok {
+				res[arr.Path] = []any{}
+			}
+			res[arr.Path] = append(res[arr.Path], arr.Value)
+		default:
+			return nil, fmt.Errorf("unknown operation %s", arr.Op)
+		}
+	}
+	return res, nil
 }
