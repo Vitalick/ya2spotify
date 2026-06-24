@@ -3,7 +3,6 @@ package yandexmusic
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -108,33 +107,11 @@ func (p *Playlist) PlaylistURL() string {
 	return yandexMusicPlaylistPageURL(p.Owner, p.PlaylistID)
 }
 
-// GetPlaylistInfo загружает HTML-страницу плейлиста из Яндекс Музыки и обновляет Playlist из window.__STATE_PATCHES__.
+// GetPlaylistInfo загружает метаданные и треки плейлиста через API Яндекс Музыки.
 //
-// Returns: error: ошибка HTTP-запроса, парсинга HTML-state или декодирования playlist.
+// Returns: error: ошибка HTTP-запроса или декодирования API-ответа.
 func (p *Playlist) GetPlaylistInfo() error {
-	resp, err := http.Get(p.PlaylistURL())
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		return fmt.Errorf("unexpected status code %d for %s", resp.StatusCode, p.PlaylistURL())
-	}
-
-	updates, err := getStateUpdateList(resp.Body)
-	if err != nil {
-		return err
-	}
-	state, err := getYandexState(updates)
-	if err != nil {
-		return err
-	}
-	if err := p.importYandexState(state); err != nil {
-		return err
-	}
-	p.imported = true
-	return nil
+	return p.loadFromYandexAPI()
 }
 
 // getTracks загружает список треков и при необходимости предварительно обновляет метаданные плейлиста.

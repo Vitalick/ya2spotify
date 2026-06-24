@@ -6,8 +6,8 @@ import (
 )
 
 type TrackArtist struct {
-	ID   int    `json:"id" mapstructure:"id"`
-	Name string `json:"name" mapstructure:"name"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 // String возвращает имя исполнителя.
@@ -34,9 +34,9 @@ func ArtistsToStrings(a []TrackArtist) []string {
 }
 
 type TrackAlbum struct {
-	ID      int           `json:"id" mapstructure:"id"`
-	Title   string        `json:"title" mapstructure:"title"`
-	Artists []TrackArtist `json:"artists" mapstructure:"artists"`
+	ID      int           `json:"id"`
+	Title   string        `json:"title"`
+	Artists []TrackArtist `json:"artists"`
 }
 
 // String форматирует альбом как название со списком исполнителей.
@@ -48,11 +48,11 @@ func (a *TrackAlbum) String() string {
 }
 
 type SingleTrack struct {
-	ID      string        `json:"id" mapstructure:"id"`
-	Title   string        `json:"title" mapstructure:"title"`
-	Version string        `json:"version" mapstructure:"version"`
-	Artists []TrackArtist `json:"artists" mapstructure:"artists"`
-	Albums  []TrackAlbum  `json:"albums" mapstructure:"albums"`
+	ID      string        `json:"id"`
+	Title   string        `json:"title"`
+	Version string        `json:"version"`
+	Artists []TrackArtist `json:"artists"`
+	Albums  []TrackAlbum  `json:"albums"`
 }
 
 // String форматирует трек как строку для HTML-страниц приложения.
