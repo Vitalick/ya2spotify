@@ -13,6 +13,10 @@ require (
 	golang.org/x/text v0.38.0
 )
 
+replace (
+	github.com/zmb3/spotify/v2 => ../spotify
+)
+
 require (
 	github.com/antchfx/xpath v1.3.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

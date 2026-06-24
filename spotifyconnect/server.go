@@ -505,9 +505,8 @@ func (s *server) handleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 		s.respond(w, http.StatusOK, page)
 		return
 	}
-	playlist, err := s.spotifyClient.CreatePlaylistForUser(
+	playlist, err := s.spotifyClient.CreatePlaylist(
 		r.Context(),
-		s.currentUser.ID,
 		playlistName,
 		playlistDescription,
 		false,
@@ -519,22 +518,22 @@ func (s *server) handleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 		s.respond(w, http.StatusOK, page)
 		return
 	}
-	var trackIDs []spotify.ID
+	var trackURIs []spotify.URI
 	for i, foundedTrack := range s.foundedTracks() {
-		trackIDs = append(trackIDs, foundedTrack.ID)
+		trackURIs = append(trackURIs, foundedTrack.URI)
 		if (i+1)%100 == 0 {
-			_, err = s.spotifyClient.AddTracksToPlaylist(r.Context(), playlist.ID, trackIDs...)
+			_, err = s.spotifyClient.AddItemsToPlaylist(r.Context(), playlist.ID, trackURIs...)
 			if err != nil {
 				s.logger.Errorln(err)
 				page = fmt.Sprintf("<p>%v</p>", err) + page
 				s.respond(w, http.StatusOK, page)
 				return
 			}
-			trackIDs = []spotify.ID{}
+			trackURIs = []spotify.URI{}
 		}
 	}
-	if len(trackIDs) > 0 {
-		_, err = s.spotifyClient.AddTracksToPlaylist(r.Context(), playlist.ID, trackIDs...)
+	if len(trackURIs) > 0 {
+		_, err = s.spotifyClient.AddItemsToPlaylist(r.Context(), playlist.ID, trackURIs...)
 		if err != nil {
 			s.logger.Errorln(err)
 			page = fmt.Sprintf("<p>%v</p>", err) + page
