@@ -1,0 +1,706 @@
+[
+  {
+    "id": "65093274",
+    "realId": "65093274",
+    "title": "На кончике хвоста",
+    "major": {
+      "id": 0,
+      "name": "-"
+    },
+    "available": true,
+    "availableForPremiumUsers": true,
+    "availableFullWithoutPermission": false,
+    "availableForOptions": [
+      "bookmate"
+    ],
+    "disclaimers": [],
+    "storageDir": "",
+    "durationMs": 132000,
+    "fileSize": 0,
+    "r128": {
+      "i": -14.61,
+      "tp": -1.70
+    },
+    "fade": {
+      "inStart": 0.3,
+      "inStop": 1.5,
+      "outStart": 127.8,
+      "outStop": 129.3
+    },
+    "previewDurationMs": 30000,
+    "artists": [
+      {
+        "id": 9088811,
+        "name": "Снейк Синатра",
+        "various": false,
+        "composer": false,
+        "available": true,
+        "cover": {
+          "type": "from-artist-photos",
+          "uri": "avatars.yandex.net/get-music-content/2806365/184f094f.p.9088811/%%",
+          "prefix": "184f094f.p.9088811/"
+        },
+        "genres": [],
+        "disclaimers": []
+      }
+    ],
+    "albums": [
+      {
+        "id": 10509403,
+        "title": "На кончике хвоста",
+        "type": "single",
+        "metaType": "music",
+        "year": 2020,
+        "releaseDate": "2020-04-27T00:00:00+03:00",
+        "coverUri": "avatars.yandex.net/get-music-content/2441215/0b3271ca.a.10509403-2/%%",
+        "ogImage": "avatars.yandex.net/get-music-content/2441215/0b3271ca.a.10509403-2/%%",
+        "genre": "soundtrack",
+        "trackCount": 1,
+        "likesCount": 30,
+        "recent": false,
+        "veryImportant": false,
+        "artists": [
+          {
+            "id": 9088811,
+            "name": "Снейк Синатра",
+            "various": false,
+            "composer": false,
+            "available": true,
+            "cover": {
+              "type": "from-artist-photos",
+              "uri": "avatars.yandex.net/get-music-content/2806365/184f094f.p.9088811/%%",
+              "prefix": "184f094f.p.9088811/"
+            },
+            "genres": [],
+            "disclaimers": []
+          }
+        ],
+        "labels": [],
+        "available": true,
+        "availableForPremiumUsers": true,
+        "availableForOptions": [
+          "bookmate"
+        ],
+        "availableForMobile": true,
+        "availablePartially": false,
+        "bests": [],
+        "disclaimers": [],
+        "listeningFinished": false,
+        "trackPosition": {
+          "volume": 1,
+          "index": 1
+        }
+      }
+    ],
+    "coverUri": "avatars.yandex.net/get-music-content/2441215/0b3271ca.a.10509403-2/%%",
+    "derivedColors": {
+      "average": "#a0602f",
+      "waveText": "#ffdcc1",
+      "miniPlayer": "#deb291",
+      "accent": "#cf9162"
+    },
+    "ogImage": "avatars.yandex.net/get-music-content/2441215/0b3271ca.a.10509403-2/%%",
+    "lyricsAvailable": true,
+    "type": "music",
+    "rememberPosition": false,
+    "trackSharingFlag": "COVER_ONLY",
+    "lyricsInfo": {
+      "hasAvailableSyncLyrics": false,
+      "hasAvailableTextLyrics": false
+    },
+    "trackSource": "OWN",
+    "specialAudioResources": [
+      "smart_preview"
+    ]
+  },
+  {
+    "id": "65093167",
+    "realId": "65093167",
+    "title": "Чешуя и яд",
+    "contentWarning": "explicit",
+    "major": {
+      "id": 0,
+      "name": "-"
+    },
+    "available": true,
+    "availableForPremiumUsers": true,
+    "availableFullWithoutPermission": false,
+    "availableForOptions": [
+      "bookmate"
+    ],
+    "disclaimers": [
+      "explicit",
+      "exclamationIcon:671a23afcec5646906723a52",
+      "descriptionText:67370c8e13b92b0a60256675"
+    ],
+    "storageDir": "",
+    "durationMs": 137420,
+    "fileSize": 0,
+    "r128": {
+      "i": -9.61,
+      "tp": 0.01
+    },
+    "fade": {
+      "inStart": 0.0,
+      "inStop": 1.5,
+      "outStart": 132.4,
+      "outStop": 135.0
+    },
+    "previewDurationMs": 30000,
+    "artists": [
+      {
+        "id": 9088796,
+        "name": "AS/DS",
+        "various": false,
+        "composer": false,
+        "available": true,
+        "cover": {
+          "type": "from-artist-photos",
+          "uri": "avatars.yandex.net/get-music-content/2442093/c33c1783.p.9088796/%%",
+          "prefix": "c33c1783.p.9088796/"
+        },
+        "genres": [],
+        "disclaimers": []
+      }
+    ],
+    "albums": [
+      {
+        "id": 10509377,
+        "title": "Чешуя и яд",
+        "type": "single",
+        "metaType": "music",
+        "contentWarning": "explicit",
+        "year": 2020,
+        "releaseDate": "2020-04-27T00:00:00+03:00",
+        "coverUri": "avatars.yandex.net/get-music-content/2386207/fc1d30bb.a.10509377-1/%%",
+        "ogImage": "avatars.yandex.net/get-music-content/2386207/fc1d30bb.a.10509377-1/%%",
+        "genre": "soundtrack",
+        "trackCount": 1,
+        "likesCount": 58,
+        "recent": false,
+        "veryImportant": false,
+        "artists": [
+          {
+            "id": 9088796,
+            "name": "AS/DS",
+            "various": false,
+            "composer": false,
+            "available": true,
+            "cover": {
+              "type": "from-artist-photos",
+              "uri": "avatars.yandex.net/get-music-content/2442093/c33c1783.p.9088796/%%",
+              "prefix": "c33c1783.p.9088796/"
+            },
+            "genres": [],
+            "disclaimers": []
+          }
+        ],
+        "labels": [],
+        "available": true,
+        "availableForPremiumUsers": true,
+        "availableForOptions": [
+          "bookmate"
+        ],
+        "availableForMobile": true,
+        "availablePartially": false,
+        "bests": [],
+        "disclaimers": [
+          "explicit",
+          "exclamationIcon:671a23afcec5646906723a52",
+          "descriptionText:67370c8e13b92b0a60256675"
+        ],
+        "listeningFinished": false,
+        "trackPosition": {
+          "volume": 1,
+          "index": 1
+        }
+      }
+    ],
+    "coverUri": "avatars.yandex.net/get-music-content/2386207/fc1d30bb.a.10509377-1/%%",
+    "derivedColors": {
+      "average": "#300f0f",
+      "waveText": "#ffc1c1",
+      "miniPlayer": "#db9393",
+      "accent": "#cb6666"
+    },
+    "ogImage": "avatars.yandex.net/get-music-content/2386207/fc1d30bb.a.10509377-1/%%",
+    "lyricsAvailable": true,
+    "type": "music",
+    "rememberPosition": false,
+    "trackSharingFlag": "COVER_ONLY",
+    "lyricsInfo": {
+      "hasAvailableSyncLyrics": false,
+      "hasAvailableTextLyrics": false
+    },
+    "trackSource": "OWN",
+    "specialAudioResources": [
+      "smart_preview"
+    ]
+  },
+  {
+    "id": "65093357",
+    "realId": "65093357",
+    "title": "Песчаный релакс",
+    "major": {
+      "id": 0,
+      "name": "-"
+    },
+    "available": true,
+    "availableForPremiumUsers": true,
+    "availableFullWithoutPermission": false,
+    "availableForOptions": [
+      "bookmate"
+    ],
+    "disclaimers": [],
+    "storageDir": "",
+    "durationMs": 147860,
+    "fileSize": 0,
+    "r128": {
+      "i": -14.88,
+      "tp": -0.76
+    },
+    "fade": {
+      "inStart": 0.2,
+      "inStop": 1.5,
+      "outStart": 138.6,
+      "outStop": 142.3
+    },
+    "previewDurationMs": 30000,
+    "artists": [
+      {
+        "id": 9088825,
+        "name": "Змеиные мечты",
+        "various": false,
+        "composer": false,
+        "available": true,
+        "cover": {
+          "type": "from-artist-photos",
+          "uri": "avatars.yandex.net/get-music-content/2424959/badc7877.p.9088825/%%",
+          "prefix": "badc7877.p.9088825/"
+        },
+        "genres": [],
+        "disclaimers": []
+      }
+    ],
+    "albums": [
+      {
+        "id": 10509423,
+        "title": "Песчаный релакс",
+        "type": "single",
+        "metaType": "music",
+        "year": 2020,
+        "releaseDate": "2020-04-27T00:00:00+03:00",
+        "coverUri": "avatars.yandex.net/get-music-content/3226792/3a4566ad.a.10509423-1/%%",
+        "ogImage": "avatars.yandex.net/get-music-content/3226792/3a4566ad.a.10509423-1/%%",
+        "genre": "soundtrack",
+        "trackCount": 1,
+        "likesCount": 26,
+        "recent": false,
+        "veryImportant": false,
+        "artists": [
+          {
+            "id": 9088825,
+            "name": "Змеиные мечты",
+            "various": false,
+            "composer": false,
+            "available": true,
+            "cover": {
+              "type": "from-artist-photos",
+              "uri": "avatars.yandex.net/get-music-content/2424959/badc7877.p.9088825/%%",
+              "prefix": "badc7877.p.9088825/"
+            },
+            "genres": [],
+            "disclaimers": []
+          }
+        ],
+        "labels": [],
+        "available": true,
+        "availableForPremiumUsers": true,
+        "availableForOptions": [
+          "bookmate"
+        ],
+        "availableForMobile": true,
+        "availablePartially": false,
+        "bests": [],
+        "disclaimers": [],
+        "listeningFinished": false,
+        "trackPosition": {
+          "volume": 1,
+          "index": 1
+        }
+      }
+    ],
+    "coverUri": "avatars.yandex.net/get-music-content/3226792/3a4566ad.a.10509423-1/%%",
+    "derivedColors": {
+      "average": "#592316",
+      "waveText": "#ffcec1",
+      "miniPlayer": "#ea9984",
+      "accent": "#e16d50"
+    },
+    "ogImage": "avatars.yandex.net/get-music-content/3226792/3a4566ad.a.10509423-1/%%",
+    "lyricsAvailable": true,
+    "type": "music",
+    "rememberPosition": false,
+    "trackSharingFlag": "COVER_ONLY",
+    "lyricsInfo": {
+      "hasAvailableSyncLyrics": false,
+      "hasAvailableTextLyrics": false
+    },
+    "trackSource": "OWN",
+    "specialAudioResources": [
+      "smart_preview"
+    ]
+  },
+  {
+    "id": "65092713",
+    "realId": "65092713",
+    "title": "Кусь",
+    "major": {
+      "id": 0,
+      "name": "-"
+    },
+    "available": true,
+    "availableForPremiumUsers": true,
+    "availableFullWithoutPermission": false,
+    "availableForOptions": [
+      "bookmate"
+    ],
+    "disclaimers": [],
+    "storageDir": "",
+    "durationMs": 184480,
+    "fileSize": 0,
+    "r128": {
+      "i": -11.55,
+      "tp": 0.38
+    },
+    "fade": {
+      "inStart": 0.0,
+      "inStop": 1.5,
+      "outStart": 173.3,
+      "outStop": 177.0
+    },
+    "previewDurationMs": 30000,
+    "artists": [
+      {
+        "id": 9088746,
+        "name": "DJ Палзуха",
+        "various": false,
+        "composer": false,
+        "available": true,
+        "cover": {
+          "type": "from-artist-photos",
+          "uri": "avatars.yandex.net/get-music-content/3071110/4712d1e7.p.9088746/%%",
+          "prefix": "4712d1e7.p.9088746/"
+        },
+        "genres": [],
+        "disclaimers": []
+      }
+    ],
+    "albums": [
+      {
+        "id": 10509244,
+        "title": "Кусь",
+        "type": "single",
+        "metaType": "music",
+        "year": 2020,
+        "releaseDate": "2020-04-27T00:00:00+03:00",
+        "coverUri": "avatars.yandex.net/get-music-content/2357076/f3370bda.a.10509244-1/%%",
+        "ogImage": "avatars.yandex.net/get-music-content/2357076/f3370bda.a.10509244-1/%%",
+        "genre": "soundtrack",
+        "trackCount": 1,
+        "likesCount": 14,
+        "recent": false,
+        "veryImportant": false,
+        "artists": [
+          {
+            "id": 9088746,
+            "name": "DJ Палзуха",
+            "various": false,
+            "composer": false,
+            "available": true,
+            "cover": {
+              "type": "from-artist-photos",
+              "uri": "avatars.yandex.net/get-music-content/3071110/4712d1e7.p.9088746/%%",
+              "prefix": "4712d1e7.p.9088746/"
+            },
+            "genres": [],
+            "disclaimers": []
+          }
+        ],
+        "labels": [],
+        "available": true,
+        "availableForPremiumUsers": true,
+        "availableForOptions": [
+          "bookmate"
+        ],
+        "availableForMobile": true,
+        "availablePartially": false,
+        "bests": [],
+        "disclaimers": [],
+        "listeningFinished": false,
+        "trackPosition": {
+          "volume": 1,
+          "index": 1
+        }
+      }
+    ],
+    "coverUri": "avatars.yandex.net/get-music-content/2357076/f3370bda.a.10509244-1/%%",
+    "derivedColors": {
+      "average": "#602fb8",
+      "waveText": "#d7c1ff",
+      "miniPlayer": "#ab8de1",
+      "accent": "#875dd4"
+    },
+    "ogImage": "avatars.yandex.net/get-music-content/2357076/f3370bda.a.10509244-1/%%",
+    "lyricsAvailable": true,
+    "type": "music",
+    "rememberPosition": false,
+    "trackSharingFlag": "COVER_ONLY",
+    "lyricsInfo": {
+      "hasAvailableSyncLyrics": false,
+      "hasAvailableTextLyrics": false
+    },
+    "trackSource": "OWN",
+    "specialAudioResources": [
+      "smart_preview"
+    ]
+  },
+  {
+    "id": "65093322",
+    "realId": "65093322",
+    "title": "Змееста",
+    "major": {
+      "id": 0,
+      "name": "-"
+    },
+    "available": true,
+    "availableForPremiumUsers": true,
+    "availableFullWithoutPermission": false,
+    "availableForOptions": [
+      "bookmate"
+    ],
+    "disclaimers": [],
+    "storageDir": "",
+    "durationMs": 168000,
+    "fileSize": 0,
+    "r128": {
+      "i": -11.73,
+      "tp": -0.27
+    },
+    "fade": {
+      "inStart": 0.0,
+      "inStop": 1.5,
+      "outStart": 164.0,
+      "outStop": 164.2
+    },
+    "previewDurationMs": 30000,
+    "artists": [
+      {
+        "id": 9088817,
+        "name": "Лос Гадюкус",
+        "various": false,
+        "composer": false,
+        "available": true,
+        "cover": {
+          "type": "from-artist-photos",
+          "uri": "avatars.yandex.net/get-music-content/3334966/c9e4d14b.p.9088817/%%",
+          "prefix": "c9e4d14b.p.9088817/"
+        },
+        "genres": [],
+        "disclaimers": []
+      }
+    ],
+    "albums": [
+      {
+        "id": 10509414,
+        "title": "Змееста",
+        "type": "single",
+        "metaType": "music",
+        "year": 2020,
+        "releaseDate": "2020-04-27T00:00:00+03:00",
+        "coverUri": "avatars.yandex.net/get-music-content/2427101/219fe4c8.a.10509414-1/%%",
+        "ogImage": "avatars.yandex.net/get-music-content/2427101/219fe4c8.a.10509414-1/%%",
+        "genre": "soundtrack",
+        "trackCount": 1,
+        "likesCount": 7,
+        "recent": false,
+        "veryImportant": false,
+        "artists": [
+          {
+            "id": 9088817,
+            "name": "Лос Гадюкус",
+            "various": false,
+            "composer": false,
+            "available": true,
+            "cover": {
+              "type": "from-artist-photos",
+              "uri": "avatars.yandex.net/get-music-content/3334966/c9e4d14b.p.9088817/%%",
+              "prefix": "c9e4d14b.p.9088817/"
+            },
+            "genres": [],
+            "disclaimers": []
+          }
+        ],
+        "labels": [],
+        "available": true,
+        "availableForPremiumUsers": true,
+        "availableForOptions": [
+          "bookmate"
+        ],
+        "availableForMobile": true,
+        "availablePartially": false,
+        "bests": [],
+        "disclaimers": [],
+        "listeningFinished": false,
+        "trackPosition": {
+          "volume": 1,
+          "index": 1
+        }
+      }
+    ],
+    "coverUri": "avatars.yandex.net/get-music-content/2427101/219fe4c8.a.10509414-1/%%",
+    "derivedColors": {
+      "average": "#5bb7d6",
+      "waveText": "#c1efff",
+      "miniPlayer": "#87cfe7",
+      "accent": "#54bbdd"
+    },
+    "ogImage": "avatars.yandex.net/get-music-content/2427101/219fe4c8.a.10509414-1/%%",
+    "lyricsAvailable": true,
+    "type": "music",
+    "rememberPosition": false,
+    "trackSharingFlag": "COVER_ONLY",
+    "lyricsInfo": {
+      "hasAvailableSyncLyrics": false,
+      "hasAvailableTextLyrics": false
+    },
+    "trackSource": "OWN",
+    "specialAudioResources": [
+      "smart_preview"
+    ]
+  },
+  {
+    "id": "65093039",
+    "realId": "65093039",
+    "title": "Укус любви",
+    "contentWarning": "explicit",
+    "major": {
+      "id": 0,
+      "name": "-"
+    },
+    "available": true,
+    "availableForPremiumUsers": true,
+    "availableFullWithoutPermission": false,
+    "availableForOptions": [
+      "bookmate"
+    ],
+    "disclaimers": [
+      "explicit",
+      "exclamationIcon:671a23afcec5646906723a52",
+      "descriptionText:67370c8e13b92b0a60256675"
+    ],
+    "storageDir": "",
+    "durationMs": 146640,
+    "fileSize": 0,
+    "r128": {
+      "i": -11.61,
+      "tp": -0.06
+    },
+    "fade": {
+      "inStart": 0.0,
+      "inStop": 1.5,
+      "outStart": 140.7,
+      "outStop": 142.8
+    },
+    "previewDurationMs": 30000,
+    "artists": [
+      {
+        "id": 9088779,
+        "name": "NIZMEIKA",
+        "various": false,
+        "composer": false,
+        "available": true,
+        "cover": {
+          "type": "from-artist-photos",
+          "uri": "avatars.yandex.net/get-music-content/3316841/05b6971a.p.9088779/%%",
+          "prefix": "05b6971a.p.9088779/"
+        },
+        "genres": [],
+        "disclaimers": []
+      }
+    ],
+    "albums": [
+      {
+        "id": 10509356,
+        "title": "Укус любви",
+        "type": "single",
+        "metaType": "music",
+        "contentWarning": "explicit",
+        "year": 2020,
+        "releaseDate": "2020-04-27T00:00:00+03:00",
+        "coverUri": "avatars.yandex.net/get-music-content/2411511/6c61bce1.a.10509356-1/%%",
+        "ogImage": "avatars.yandex.net/get-music-content/2411511/6c61bce1.a.10509356-1/%%",
+        "genre": "soundtrack",
+        "trackCount": 1,
+        "likesCount": 16,
+        "recent": false,
+        "veryImportant": false,
+        "artists": [
+          {
+            "id": 9088779,
+            "name": "NIZMEIKA",
+            "various": false,
+            "composer": false,
+            "available": true,
+            "cover": {
+              "type": "from-artist-photos",
+              "uri": "avatars.yandex.net/get-music-content/3316841/05b6971a.p.9088779/%%",
+              "prefix": "05b6971a.p.9088779/"
+            },
+            "genres": [],
+            "disclaimers": []
+          }
+        ],
+        "labels": [],
+        "available": true,
+        "availableForPremiumUsers": true,
+        "availableForOptions": [
+          "bookmate"
+        ],
+        "availableForMobile": true,
+        "availablePartially": false,
+        "bests": [],
+        "disclaimers": [
+          "explicit",
+          "exclamationIcon:671a23afcec5646906723a52",
+          "descriptionText:67370c8e13b92b0a60256675"
+        ],
+        "listeningFinished": false,
+        "trackPosition": {
+          "volume": 1,
+          "index": 1
+        }
+      }
+    ],
+    "coverUri": "avatars.yandex.net/get-music-content/2411511/6c61bce1.a.10509356-1/%%",
+    "derivedColors": {
+      "average": "#d65b6e",
+      "waveText": "#ffc1ca",
+      "miniPlayer": "#f97589",
+      "accent": "#f63b57"
+    },
+    "ogImage": "avatars.yandex.net/get-music-content/2411511/6c61bce1.a.10509356-1/%%",
+    "lyricsAvailable": true,
+    "type": "music",
+    "rememberPosition": false,
+    "trackSharingFlag": "COVER_ONLY",
+    "lyricsInfo": {
+      "hasAvailableSyncLyrics": false,
+      "hasAvailableTextLyrics": false
+    },
+    "trackSource": "OWN",
+    "specialAudioResources": [
+      "smart_preview"
+    ]
+  }
+]

@@ -1,0 +1,941 @@
+{
+  "invocationInfo": {
+    "req-id": "1782321236137895-14292341343028112418",
+    "hostname": "music-web-default-production-music-95.vla.yp-c.yandex.net",
+    "exec-duration-millis": 90
+  },
+  "result": {
+    "owner": {
+      "uid": 103372440,
+      "login": "music-blog",
+      "name": "Яндекс Музыка",
+      "sex": "male",
+      "verified": true
+    },
+    "playlistUuid": "65b2e7a9-b735-e097-9b2c-ec6a89125c71",
+    "available": true,
+    "uid": 103372440,
+    "kind": 2324,
+    "title": "Змеиный плейлист",
+    "description": "Шесть шипящих треков от чешуйчатых исполнителей прямиком из параллельной вселенной «Рика и Морти». Извиваться — разрешается!",
+    "descriptionFormatted": "Шесть шипящих треков от чешуйчатых исполнителей прямиком из параллельной вселенной &laquo;Рика и Морти&raquo;. Извиваться &#8212; разрешается!",
+    "revision": 9,
+    "snapshot": 67,
+    "trackCount": 6,
+    "visibility": "public",
+    "collective": false,
+    "created": "2020-04-22T06:50:17+00:00",
+    "modified": "2020-04-27T04:40:17+00:00",
+    "backgroundColor": "",
+    "textColor": "#000000",
+    "image": "",
+    "isBanner": false,
+    "isPremiere": false,
+    "durationMs": 916400,
+    "cover": {
+      "type": "pic",
+      "dir": "/get-music-user-playlist/30088/103372440.2324.69282/",
+      "version": "1587990689653",
+      "uri": "avatars.yandex.net/get-music-user-playlist/38125/103372440.2324.88477ru/%%?1587990689653",
+      "custom": true
+    },
+    "ogImage": "avatars.yandex.net/get-music-user-playlist/38125/103372440.2324.88477ru/%%?1587990689653",
+    "tracks": [
+      {
+        "originalIndex": 0,
+        "originalShuffleIndex": 0,
+        "timestamp": "2020-04-27T04:39:53+00:00",
+        "id": 65093274,
+        "albumId": 10509403
+      },
+      {
+        "originalIndex": 1,
+        "originalShuffleIndex": 1,
+        "timestamp": "2020-04-27T04:39:31+00:00",
+        "id": 65093167,
+        "albumId": 10509377
+      },
+      {
+        "originalIndex": 2,
+        "originalShuffleIndex": 2,
+        "timestamp": "2020-04-27T04:39:13+00:00",
+        "id": 65093357,
+        "albumId": 10509423
+      },
+      {
+        "originalIndex": 3,
+        "originalShuffleIndex": 3,
+        "timestamp": "2020-04-27T04:38:54+00:00",
+        "id": 65092713,
+        "albumId": 10509244
+      },
+      {
+        "originalIndex": 4,
+        "originalShuffleIndex": 4,
+        "timestamp": "2020-04-27T04:38:30+00:00",
+        "id": 65093322,
+        "albumId": 10509414
+      },
+      {
+        "originalIndex": 5,
+        "originalShuffleIndex": 5,
+        "timestamp": "2020-04-27T04:38:25+00:00",
+        "id": 65093039,
+        "albumId": 10509356
+      }
+    ],
+    "tags": [
+      {
+        "id": "5d5d21281d10461b4537d598",
+        "value": "no compilation"
+      }
+    ],
+    "likesCount": 6307,
+    "similarPlaylists": [
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "bba43681-f7ee-bb94-5e04-7c6cabde4706",
+        "available": true,
+        "uid": 103372440,
+        "kind": 1922,
+        "title": "Легенды осени",
+        "description": "Подборка песен c туманного Альбиона — музыка от прожжённых панков и инди-рокеров, в творчестве каждого из которых находилось место для лирики.",
+        "descriptionFormatted": "Подборка песен c туманного Альбиона &#8212; музыка от прожжённых панков и инди-рокеров, в творчестве каждого из которых находилось место для лирики.",
+        "revision": 21,
+        "snapshot": 124,
+        "trackCount": 20,
+        "visibility": "public",
+        "collective": false,
+        "created": "2018-09-11T06:54:15+00:00",
+        "modified": "2018-09-21T09:06:53+00:00",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 4864510,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/27701/103372440.1922.13117/",
+          "version": "1568645113117",
+          "uri": "avatars.yandex.net/get-music-user-playlist/27701/103372440.1922.13117/%%?1568645113117",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/27701/103372440.1922.13117/%%?1568645113117",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "Легенды осени",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#5bacd6",
+          "waveText": "#c1eaff",
+          "miniPlayer": "#89c6e6",
+          "accent": "#56aedb"
+        }
+      },
+      {
+        "owner": {
+          "uid": 105590476,
+          "login": "ya.playlist",
+          "name": "Музыкальные подборки",
+          "sex": "female",
+          "verified": true
+        },
+        "playlistUuid": "73d623de-6aaa-f50e-8e74-a89a09b9e37c",
+        "available": true,
+        "uid": 105590476,
+        "kind": 1225,
+        "title": "Итальянская эстрада 80-х",
+        "revision": 28,
+        "snapshot": 13,
+        "trackCount": 17,
+        "visibility": "public",
+        "collective": false,
+        "created": "2014-05-14T11:00:17+00:00",
+        "modified": "2017-08-31T18:19:24+00:00",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 3909380,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/10311229/105590476.1225.71822/",
+          "version": "1748957771822",
+          "uri": "avatars.yandex.net/get-music-user-playlist/10311229/105590476.1225.71822/%%?1748957771822",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/10311229/105590476.1225.71822/%%?1748957771822",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          },
+          {
+            "id": "6601bcc019601854e06d119a",
+            "value": "estrada"
+          }
+        ],
+        "customWave": {
+          "title": "Итальянская эстрада 80-х",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#d65b97",
+          "waveText": "#ffc1df",
+          "miniPlayer": "#ff70b5",
+          "accent": "#ff3396"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "61bbbf12-d976-53b8-6ec5-627b61e5cf8f",
+        "available": true,
+        "uid": 103372440,
+        "kind": 2139,
+        "title": "Route 66: путешествие по Америке",
+        "description": "Дорогу Route 66 называют «главной улицей Америки». Она получила мировую известность благодаря популярным песням и фильмам. Одноимённую песню впервые исполнил Нэт Кинг Коул в 1946 году. С тех пор этот хит исполняли десятки музыкантов, и он стал основой плейлиста для идеального путешествия по Америке на машине.",
+        "descriptionFormatted": "Дорогу Route 66 называют &laquo;главной улицей Америки&raquo;. Она получила мировую известность благодаря популярным песням и фильмам. Одноимённую песню впервые исполнил Нэт Кинг Коул в 1946 году. С тех пор этот хит исполняли десятки музыкантов, и он стал основой плейлиста для идеального путешествия по Америке на машине.",
+        "revision": 3,
+        "snapshot": 80,
+        "trackCount": 22,
+        "visibility": "public",
+        "collective": false,
+        "created": "2019-07-25T13:40:07+00:00",
+        "modified": "2019-07-25T13:40:07+00:00",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 5375380,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/51766/103372440.2139.91071/",
+          "version": "1564062091071",
+          "uri": "avatars.yandex.net/get-music-user-playlist/51766/103372440.2139.91071/%%?1564062091071",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/51766/103372440.2139.91071/%%?1564062091071",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "Route 66: путешествие по Америке",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#d48d54",
+          "waveText": "#ffdcc1",
+          "miniPlayer": "#f4b07a",
+          "accent": "#f08e41"
+        }
+      },
+      {
+        "owner": {
+          "uid": 139954184,
+          "login": "music.partners",
+          "name": "Музыкальная редакция",
+          "sex": "female",
+          "verified": true
+        },
+        "playlistUuid": "c4af4cf6-9beb-d376-6097-e478a3188dad",
+        "available": true,
+        "uid": 139954184,
+        "kind": 1700,
+        "title": "Рио-де-Жанейро в десяти песнях",
+        "description": "«Впервые я побывал в Бразилии около двадцати лет назад. Мне так нравилась бразильская музыка, что я просто не мог туда не поехать! Рио оказался именно таким, как я представлял: трущобы и хаос, пляжи и женщины, босанова и самба», — [рассказывает](http://www.port-magazine.com/music/gilles-peterson-my-brazil-exclusive-playlist/) британский диджей и продюсер Жиль Петерсон. По просьбе редакции [The Guardian](https://www.theguardian.com/travel/2016/jul/30/gilles-peterson-rio-de-janeiro-playlist) он составил плейлист, в котором воплотился дух удивительного города. ",
+        "descriptionFormatted": "&laquo;Впервые я побывал в Бразилии около двадцати лет назад. Мне так нравилась бразильская музыка, что я просто не мог туда не поехать! Рио оказался именно таким, как я представлял: трущобы и хаос, пляжи и женщины, босанова и самба&raquo;, &#8212; \u003Ca href=\"http://www.port-magazine.com/music/gilles-peterson-my-brazil-exclusive-playlist/\" target=\"_blank\" rel=\"noopener noreferrer\"\u003Eрассказывает\u003C/a\u003E британский диджей и продюсер Жиль Петерсон. По просьбе редакции \u003Ca href=\"https://www.theguardian.com/travel/2016/jul/30/gilles-peterson-rio-de-janeiro-playlist\" target=\"_blank\" rel=\"noopener noreferrer\"\u003EThe Guardian\u003C/a\u003E он составил плейлист, в котором воплотился дух удивительного города. ",
+        "revision": 12,
+        "snapshot": 14,
+        "trackCount": 8,
+        "visibility": "public",
+        "collective": false,
+        "created": "2016-08-01T10:28:20+00:00",
+        "modified": "2017-09-25T08:54:01+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 1749710,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/59900/139954184.1700.73451/",
+          "version": "1568646473451",
+          "uri": "avatars.yandex.net/get-music-user-playlist/59900/139954184.1700.73451/%%?1568646473451",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/59900/139954184.1700.73451/%%?1568646473451",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "Рио-де-Жанейро в десяти песнях",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#2fa53a",
+          "waveText": "#c1ffc7",
+          "miniPlayer": "#90de97",
+          "accent": "#60d16a"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "cf38b4d2-c9c9-b48c-80f3-7a951fac8832",
+        "available": true,
+        "uid": 103372440,
+        "kind": 2391,
+        "title": "Модный плейлист",
+        "description": "В честь Чёрной пятницы собрали треки, в которых упоминаются популярные бренды.",
+        "descriptionFormatted": "В честь Чёрной пятницы собрали треки, в которых упоминаются популярные бренды.",
+        "revision": 76,
+        "snapshot": 129,
+        "trackCount": 30,
+        "visibility": "public",
+        "collective": false,
+        "created": "2020-10-26T13:56:05+00:00",
+        "modified": "2021-11-26T08:04:15+00:00",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 10276510,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/30088/103372440.2391.23449/",
+          "version": "1637927913327",
+          "uri": "avatars.yandex.net/get-music-user-playlist/59900/103372440.2391.12782ru/%%?1637927913327",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/59900/103372440.2391.12782ru/%%?1637927913327",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "Модный плейлист",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#5e5bd6",
+          "waveText": "#c3c1ff",
+          "miniPlayer": "#7370ff",
+          "accent": "#3733ff"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "ff052394-44d5-7c0c-aaa1-466508a44be4",
+        "available": true,
+        "uid": 103372440,
+        "kind": 2132,
+        "title": "Музыка из рекламы",
+        "description": "Треки из новых видеороликов популярных брендов.",
+        "descriptionFormatted": "Треки из новых видеороликов популярных брендов.",
+        "revision": 20,
+        "snapshot": 106,
+        "trackCount": 101,
+        "visibility": "public",
+        "collective": false,
+        "created": "2019-07-18T08:46:13+00:00",
+        "modified": "2019-07-23T08:49:14+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 22295620,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/51766/103372440.2132.7723/",
+          "version": "1563526407723",
+          "uri": "avatars.yandex.net/get-music-user-playlist/51766/103372440.2132.7723/%%?1563526407723",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/51766/103372440.2132.7723/%%?1563526407723",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "Музыка из рекламы",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#a38e28",
+          "waveText": "#fff4c1",
+          "miniPlayer": "#fde671",
+          "accent": "#fddb34"
+        }
+      },
+      {
+        "owner": {
+          "uid": 139954184,
+          "login": "music.partners",
+          "name": "Музыкальная редакция",
+          "sex": "female",
+          "verified": true
+        },
+        "playlistUuid": "7c421903-f9a0-9893-162d-ebc5232f68d5",
+        "available": true,
+        "uid": 139954184,
+        "kind": 1192,
+        "title": "Нью-Йорк, Нью-Йорк: песни о городе",
+        "description": "Музыкальный портал Pigeons & Planes [сделал](http://pigeonsandplanes.com/2014/09/songs-about-new-york-city/s/430074/) подборку песен о городе контрастов. По мнению редакции журнала, после прослушивания этого плейлиста так и хочется собрать чемоданы и переехать жить в Нью-Йорк.\n",
+        "descriptionFormatted": "Музыкальный портал Pigeons &amp; Planes \u003Ca href=\"http://pigeonsandplanes.com/2014/09/songs-about-new-york-city/s/430074/\" target=\"_blank\" rel=\"noopener noreferrer\"\u003Eсделал\u003C/a\u003E подборку песен о городе контрастов. По мнению редакции журнала, после прослушивания этого плейлиста так и хочется собрать чемоданы и переехать жить в Нью-Йорк.\u003Cbr/\u003E",
+        "revision": 2,
+        "snapshot": 14,
+        "trackCount": 10,
+        "visibility": "public",
+        "collective": false,
+        "created": "2014-09-03T12:42:07+00:00",
+        "modified": "2017-09-13T10:39:34+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 2714550,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/51766/139954184.1192.38433/",
+          "version": "1568646638433",
+          "uri": "avatars.yandex.net/get-music-user-playlist/51766/139954184.1192.38433/%%?1568646638433",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/51766/139954184.1192.38433/%%?1568646638433",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "Нью-Йорк, Нью-Йорк: песни о городе",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#5b95d6",
+          "waveText": "#c1deff",
+          "miniPlayer": "#88b4e6",
+          "accent": "#5694db"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "935a0afa-644f-c684-b972-bcfa1db68f25",
+        "available": true,
+        "uid": 103372440,
+        "kind": 1149,
+        "title": "Песни про тёщу",
+        "revision": 40,
+        "snapshot": 83,
+        "trackCount": 12,
+        "visibility": "public",
+        "collective": false,
+        "created": "2014-02-21T13:51:19+00:00",
+        "modified": "2017-10-24T15:20:48+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 2444643,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/51766/103372440.1149.85973/",
+          "version": "1549463385973",
+          "uri": "avatars.yandex.net/get-music-user-playlist/51766/103372440.1149.85973/%%?1549463385973",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/51766/103372440.1149.85973/%%?1549463385973",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "Песни про тёщу",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#459d72",
+          "waveText": "#c1ffe0",
+          "miniPlayer": "#9cd2b7",
+          "accent": "#71c099"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "8e18004b-bc9d-2056-bff2-74e47b86ea53",
+        "available": true,
+        "uid": 103372440,
+        "kind": 1319,
+        "title": "Песни о роковых женщинах",
+        "revision": 20,
+        "snapshot": 86,
+        "trackCount": 7,
+        "visibility": "public",
+        "collective": false,
+        "created": "2016-03-02T11:11:22+00:00",
+        "modified": "2017-10-24T15:20:48+00:00",
+        "backgroundColor": "",
+        "textColor": "",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 1986040,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/28719/103372440.1319.12957/",
+          "version": "1549463512957",
+          "uri": "avatars.yandex.net/get-music-user-playlist/28719/103372440.1319.12957/%%?1549463512957",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/28719/103372440.1319.12957/%%?1549463512957",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "Песни о роковых женщинах",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#972534",
+          "waveText": "#ffc1c9",
+          "miniPlayer": "#ff7082",
+          "accent": "#ff334c"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "ec8c9fb5-7ace-f480-b7cf-56ac9520b7bc",
+        "available": true,
+        "uid": 103372440,
+        "kind": 2449,
+        "title": "To Russia with Love",
+        "description": "Финские металлисты KYPCK, мексиканские рокеры Molotov, британские электронщики Moloko — в этом плейлисте собраны иностранные группы, чьи названия связаны с Россией.",
+        "descriptionFormatted": "Финские металлисты KYPCK, мексиканские рокеры Molotov, британские электронщики Moloko &#8212; в этом плейлисте собраны иностранные группы, чьи названия связаны с Россией.",
+        "revision": 156,
+        "snapshot": 216,
+        "trackCount": 31,
+        "visibility": "public",
+        "collective": false,
+        "created": "2020-12-08T08:48:57+00:00",
+        "modified": "2021-01-15T10:36:26+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 7676430,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/71140/103372440.2449.3623/",
+          "version": "1610707103623",
+          "uri": "avatars.yandex.net/get-music-user-playlist/71140/103372440.2449.3623/%%?1610707103623",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/71140/103372440.2449.3623/%%?1610707103623",
+        "tags": [
+          {
+            "id": "5d5d21281d10461b4537d598",
+            "value": "no compilation"
+          }
+        ],
+        "customWave": {
+          "title": "To Russia with Love",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#816965",
+          "waveText": "#ffcac1",
+          "miniPlayer": "#bfb1af",
+          "accent": "#a4908d"
+        }
+      }
+    ],
+    "lastOwnerPlaylists": [
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "ab7bf7ba-c48f-7872-9d28-229150036fde",
+        "available": true,
+        "uid": 103372440,
+        "kind": 2629,
+        "title": "Русский рок: открытия",
+        "description": "На обложке: Air Yami\r\nНовые имена и будущие рок-звёзды",
+        "descriptionFormatted": "На обложке: Air Yami\u003Cbr/\u003EНовые имена и будущие рок-звёзды",
+        "revision": 1508,
+        "snapshot": 2980,
+        "trackCount": 203,
+        "visibility": "public",
+        "collective": false,
+        "created": "2021-08-04T15:59:23+00:00",
+        "modified": "2026-06-24T17:01:09+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 34398570,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/11184076/103372440.2629.75976/",
+          "version": "1781787575976",
+          "uri": "avatars.yandex.net/get-music-user-playlist/11184076/103372440.2629.75976/%%?1781787575976",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/11184076/103372440.2629.75976/%%?1781787575976",
+        "tags": [
+          {
+            "id": "5f71f30c35d493161b4393fa",
+            "value": "2020s"
+          },
+          {
+            "id": "5c11f05b3f9b6400bb442647",
+            "value": "rusrock"
+          },
+          {
+            "id": "5795cf1193aee1813dc8e181",
+            "value": "rock"
+          },
+          {
+            "id": "5efb73f7e630943eea37ed89",
+            "value": "newartists"
+          }
+        ],
+        "backgroundImageUrl": "avatars.yandex.net/get-music-user-playlist/11423738/103372440.2629.rnd-513841207.playlist-branding/%%",
+        "customWave": {
+          "title": "Русский рок: открытия",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#4730bb",
+          "waveText": "#cbc1ff",
+          "miniPlayer": "#9b8de1",
+          "accent": "#705dd4"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "baf76c21-4261-b76b-b249-1c3917ab45d3",
+        "available": true,
+        "uid": 103372440,
+        "kind": 1878,
+        "title": "За кадром",
+        "description": "Подборка треков с видеошотами из клипов. Плейлист, который смотрят.\r\nНа обложке: Мари Краймбрери",
+        "descriptionFormatted": "Подборка треков с видеошотами из клипов. Плейлист, который смотрят.\u003Cbr/\u003EНа обложке: Мари Краймбрери",
+        "revision": 5319,
+        "snapshot": 6813,
+        "trackCount": 219,
+        "visibility": "public",
+        "collective": false,
+        "created": "2018-07-04T08:35:32+00:00",
+        "modified": "2026-06-24T10:43:08+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 35204570,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/11300679/103372440.1878.45668/",
+          "version": "1782297445668",
+          "uri": "avatars.yandex.net/get-music-user-playlist/11300679/103372440.1878.45668/%%?1782297445668",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/11300679/103372440.1878.45668/%%?1782297445668",
+        "tags": [
+          {
+            "id": "5795cf1793aee1813dc8e182",
+            "value": "pop"
+          },
+          {
+            "id": "5ae445f6cfd69fb3b9cc6dfd",
+            "value": "top"
+          },
+          {
+            "id": "5bbc9eca5367660064a8cc12",
+            "value": "new_playlists"
+          },
+          {
+            "id": "5c11f00a3f9b6400bb44263b",
+            "value": "ruspop"
+          }
+        ],
+        "backgroundImageUrl": "avatars.yandex.net/get-music-user-playlist/11298840/103372440.1878.rnd-1491193026.playlist-branding/%%",
+        "customWave": {
+          "title": "За кадром",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#8f2eba",
+          "waveText": "#ecc1ff",
+          "miniPlayer": "#ca85e9",
+          "accent": "#b451e0"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "d7f3839d-d3cb-c7cd-b98d-cdc6d2dfa64a",
+        "available": true,
+        "uid": 103372440,
+        "kind": 1624,
+        "title": "Летние новинки",
+        "description": "На обложке: XOLIDAYBOY\r\nСвежая музыка сезона на русском языке",
+        "descriptionFormatted": "На обложке: XOLIDAYBOY\u003Cbr/\u003EСвежая музыка сезона на русском языке",
+        "revision": 4169,
+        "snapshot": 6112,
+        "trackCount": 181,
+        "visibility": "public",
+        "collective": false,
+        "created": "2017-06-01T11:34:27+00:00",
+        "modified": "2026-06-24T08:50:29+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 28801830,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/11300361/103372440.1624.76553/",
+          "version": "1781803176553",
+          "uri": "avatars.yandex.net/get-music-user-playlist/11300361/103372440.1624.76553/%%?1781803176553",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/11300361/103372440.1624.76553/%%?1781803176553",
+        "tags": [
+          {
+            "id": "5795cfcd77d30f7fda41bcb7",
+            "value": "summer"
+          }
+        ],
+        "backgroundImageUrl": "avatars.yandex.net/get-music-user-playlist/11407514/103372440.1624.rnd-1883109490.playlist-branding/%%",
+        "customWave": {
+          "title": "Летние новинки",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#30923c",
+          "waveText": "#c1ffc9",
+          "miniPlayer": "#94db9c",
+          "accent": "#66cb72"
+        }
+      },
+      {
+        "owner": {
+          "uid": 103372440,
+          "login": "music-blog",
+          "name": "Яндекс Музыка",
+          "sex": "male",
+          "verified": true
+        },
+        "playlistUuid": "0d98c0f0-6b59-233f-9d39-3cdcd1eeac82",
+        "available": true,
+        "uid": 103372440,
+        "kind": 2128,
+        "title": "Светлая грусть",
+        "description": "Тихие и задумчивые песни на случай, если к вам вдруг постучалась печаль.",
+        "descriptionFormatted": "Тихие и задумчивые песни на случай, если к вам вдруг постучалась печаль.",
+        "revision": 201,
+        "snapshot": 449,
+        "trackCount": 199,
+        "visibility": "public",
+        "collective": false,
+        "created": "2019-07-16T15:56:51+00:00",
+        "modified": "2026-06-24T08:30:01+00:00",
+        "backgroundColor": "",
+        "textColor": "#000000",
+        "image": "",
+        "isBanner": false,
+        "isPremiere": false,
+        "durationMs": 35247950,
+        "cover": {
+          "type": "pic",
+          "dir": "/get-music-user-playlist/11407805/103372440.2128.44589/",
+          "version": "1748459944589",
+          "uri": "avatars.yandex.net/get-music-user-playlist/11407805/103372440.2128.44589/%%?1748459944589",
+          "custom": true
+        },
+        "ogImage": "avatars.yandex.net/get-music-user-playlist/11407805/103372440.2128.44589/%%?1748459944589",
+        "tags": [
+          {
+            "id": "5795cfcd77d30f7fda41bcb7",
+            "value": "summer"
+          },
+          {
+            "id": "5795cfbe77d30f7fda41bcb5",
+            "value": "sad"
+          },
+          {
+            "id": "618a5cbbb4c4683bfe1c0bf4",
+            "value": "sentimental"
+          }
+        ],
+        "customWave": {
+          "title": "Светлая грусть",
+          "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+          "position": "default",
+          "header": "Моя волна по плейлисту",
+          "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+          "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+        },
+        "derivedColors": {
+          "average": "#6a737a",
+          "waveText": "#e0e0e0",
+          "miniPlayer": "#b2b8bc",
+          "accent": "#9199a0"
+        }
+      }
+    ],
+    "customWave": {
+      "title": "Змеиный плейлист",
+      "animationUrl": "https://music-custom-wave-media.s3.yandex.net/base.json",
+      "position": "default",
+      "header": "Моя волна по плейлисту",
+      "backgroundImageUrl": "avatars.mds.yandex.net/get-music-misc/28052/custom-wave-default-playlist-background.image/%%",
+      "squareAgentAnimation": "https://music-custom-wave-media.music.yandex.net/OLRwjRlyUe"
+    },
+    "pager": {
+      "total": 6,
+      "page": 0,
+      "perPage": 6
+    },
+    "hasTrailer": true,
+    "trailer": {
+      "available": true
+    },
+    "derivedColors": {
+      "average": "#6c9f2c",
+      "waveText": "#e4ffc1",
+      "miniPlayer": "#bcdf8f",
+      "accent": "#9fd25f"
+    }
+  }
+}
