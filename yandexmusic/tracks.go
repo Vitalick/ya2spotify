@@ -1,4 +1,4 @@
-package yandex_music
+package yandexmusic
 
 import (
 	"fmt"
@@ -10,10 +10,21 @@ type TrackArtist struct {
 	Name string `json:"name"`
 }
 
+// String возвращает имя исполнителя.
+//
+// Returns:
+//   - string: имя исполнителя из данных Яндекс Музыки.
 func (a *TrackArtist) String() string {
 	return a.Name
 }
 
+// ArtistsToStrings преобразует список исполнителей в список имен.
+//
+// Parameters:
+//   - a: исполнители из трека или альбома.
+//
+// Returns:
+//   - []string: имена исполнителей в исходном порядке.
 func ArtistsToStrings(a []TrackArtist) []string {
 	var stringArtists []string
 	for _, artist := range a {
@@ -28,6 +39,10 @@ type TrackAlbum struct {
 	Artists []TrackArtist `json:"artists"`
 }
 
+// String форматирует альбом как название со списком исполнителей.
+//
+// Returns:
+//   - string: строка вида "<альбом> [<исполнители>]".
 func (a *TrackAlbum) String() string {
 	return fmt.Sprintf("%s [%s]", a.Title, strings.Join(ArtistsToStrings(a.Artists), ", "))
 }
@@ -40,6 +55,10 @@ type SingleTrack struct {
 	Albums  []TrackAlbum  `json:"albums"`
 }
 
+// String форматирует трек как строку для HTML-страниц приложения.
+//
+// Returns:
+//   - string: строка с исполнителями, названием и версией трека при ее наличии.
 func (t *SingleTrack) String() string {
 	outString := fmt.Sprintf("%s - %s", strings.Join(ArtistsToStrings(t.Artists), ", "), t.Title)
 	if len(t.Version) > 0 {

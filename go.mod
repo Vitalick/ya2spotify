@@ -1,4 +1,4 @@
-module yandexToSpotify
+module ya2spotify
 
 go 1.25.0
 

@@ -56,7 +56,7 @@ linters:
         - name: flag-parameter
           disabled: true
         - name: package-directory-mismatch
-          disabled: true
+          severity: warning
         - name: comment-spacings
           disabled: true
         - name: blank-imports
@@ -64,11 +64,11 @@ linters:
         - name: unused-receiver
           disabled: true
         - name: var-naming
-          disabled: true
+          severity: warning
         - name: add-constant
           disabled: true
         - name: package-comments
-          disabled: true
+          severity: warning
         - name: max-public-structs
           disabled: true
         - name: confusing-naming

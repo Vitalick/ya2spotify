@@ -1,4 +1,4 @@
-package spotify_connect
+package spotifyconnect
 
 import (
 	"context"
@@ -19,10 +19,10 @@ import (
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 
-	"yandexToSpotify/yandex_music"
+	"ya2spotify/yandexmusic"
 )
 
-type yandexSpotifyTrackIdMap map[string]spotify.FullTrack
+type yandexSpotifyTrackIDMap map[string]spotify.FullTrack
 
 type server struct {
 	router         *routing.Router
@@ -31,8 +31,8 @@ type server struct {
 	state          string
 	spotifyClient  *spotify.Client
 	currentUser    *spotify.PrivateUser
-	savedPlaylist  *yandex_music.Playlist
-	yandexSpotify  yandexSpotifyTrackIdMap
+	savedPlaylist  *yandexmusic.Playlist
+	yandexSpotify  yandexSpotifyTrackIDMap
 	mMap           *sync.Mutex
 	mCounter       *sync.Mutex
 	mClient        *sync.Mutex
@@ -41,6 +41,14 @@ type server struct {
 	nowSearchTrack int
 }
 
+// newServer создает состояние веб-сервера и регистрирует маршруты приложения.
+//
+// Parameters:
+//   - auth: Spotify OAuth authenticator для логина и получения клиента.
+//   - state: OAuth state, который должен вернуться в callback.
+//
+// Returns:
+//   - *server: настроенный сервер с роутером, mutex'ами и количеством worker'ов по CPU.
 func newServer(auth *spotifyauth.Authenticator, state string) *server {
 	s := &server{
 		router:        routing.New(),
@@ -50,7 +58,7 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		spotifyClient: &spotify.Client{},
 		currentUser:   &spotify.PrivateUser{},
 		savedPlaylist: nil,
-		yandexSpotify: make(yandexSpotifyTrackIdMap),
+		yandexSpotify: make(yandexSpotifyTrackIDMap),
 		mMap:          &sync.Mutex{},
 		mCounter:      &sync.Mutex{},
 		mClient:       &sync.Mutex{},
@@ -69,6 +77,10 @@ type tracksQuantity struct {
 	yandex, foundedSpotify, notFoundedSpotify int
 }
 
+// quantityOfTracks считает треки Яндекс Музыки и результаты их поиска в Spotify.
+//
+// Returns:
+//   - *tracksQuantity: количество исходных, найденных и не найденных в Spotify треков.
 func (s *server) quantityOfTracks() *tracksQuantity {
 	tracksQuantityYandex := len(s.savedPlaylist.Tracks)
 	tracksFoundedSpotify := 0
@@ -87,6 +99,10 @@ func (s *server) quantityOfTracks() *tracksQuantity {
 	return &tracksQuantity{tracksQuantityYandex, tracksFoundedSpotify, tracksNotFoundedSpotify}
 }
 
+// foundedTracks собирает найденные в Spotify треки для добавления в новый плейлист.
+//
+// Returns:
+//   - []spotify.FullTrack: найденные треки без записей-маркеров "nil".
 func (s *server) foundedTracks() []spotify.FullTrack {
 	var foundedTracks []spotify.FullTrack
 	for _, track := range s.savedPlaylist.Tracks {
@@ -99,7 +115,11 @@ func (s *server) foundedTracks() []spotify.FullTrack {
 	return foundedTracks
 }
 
-func (s *server) getTrack() *yandex_music.SingleTrack {
+// getTrack возвращает следующий трек из импортированного плейлиста для потоковой обработки.
+//
+// Returns:
+//   - *yandexmusic.SingleTrack: следующий трек или nil, если треки закончились.
+func (s *server) getTrack() *yandexmusic.SingleTrack {
 	s.mCounter.Lock()
 	defer s.mCounter.Unlock()
 	if s.nowSearchTrack >= len(s.savedPlaylist.Tracks) {
@@ -109,7 +129,15 @@ func (s *server) getTrack() *yandex_music.SingleTrack {
 	return &s.savedPlaylist.Tracks[s.nowSearchTrack-1]
 }
 
-func (s *server) searchTrackInSpotify(yt *yandex_music.SingleTrack) {
+// searchTrackInSpotify ищет один трек Яндекс Музыки в Spotify и сохраняет результат в карту соответствий.
+//
+// Parameters:
+//   - yt: трек Яндекс Музыки для поиска.
+//
+// Cases:
+//   - если пользователь Spotify не авторизован, поиск не выполняется.
+//   - если трек не найден, в карту записывается marker-трек с ID "nil".
+func (s *server) searchTrackInSpotify(yt *yandexmusic.SingleTrack) {
 	ctx := context.Background()
 	//s.logger.Infof("SEARCH %s\n", yt.String())
 	if len(s.currentUser.ID) == 0 {
@@ -142,7 +170,12 @@ func (s *server) searchTrackInSpotify(yt *yandex_music.SingleTrack) {
 	//time.Sleep(time.Second * 1)
 }
 
-func (s *server) searchTracksInSpotifyChan(tracksChan chan yandex_music.SingleTrack, thread int) {
+// searchTracksInSpotifyChan обрабатывает треки из канала в отдельном worker'е поиска.
+//
+// Parameters:
+//   - tracksChan: канал треков для поиска.
+//   - thread: индекс worker'а в массиве статусов завершения.
+func (s *server) searchTracksInSpotifyChan(tracksChan chan yandexmusic.SingleTrack, thread int) {
 	for yt := range tracksChan {
 		if yt.ID == "" {
 			break
@@ -152,6 +185,11 @@ func (s *server) searchTracksInSpotifyChan(tracksChan chan yandex_music.SingleTr
 	s.threadsFinish[thread] = true
 }
 
+// searchTracksInSpotify запускает параллельный поиск всех импортированных треков в Spotify.
+//
+// Cases:
+//   - если пользователь не авторизован, поиск не запускается.
+//   - если предыдущий поиск еще идет, новый запуск игнорируется.
 func (s *server) searchTracksInSpotify() {
 	if len(s.currentUser.ID) == 0 {
 		return
@@ -162,7 +200,7 @@ func (s *server) searchTracksInSpotify() {
 		}
 	}
 	s.nowSearchTrack = 0
-	tracksChan := make(chan yandex_music.SingleTrack)
+	tracksChan := make(chan yandexmusic.SingleTrack)
 	for i := 0; i < s.maxThreads; i++ {
 		s.threadsFinish[i] = false
 		go s.searchTracksInSpotifyChan(tracksChan, i)
@@ -173,10 +211,15 @@ func (s *server) searchTracksInSpotify() {
 	close(tracksChan)
 }
 
+// ServeHTTP передает fasthttp-запрос в роутер приложения.
+//
+// Parameters:
+//   - ctx: контекст текущего fasthttp-запроса.
 func (s *server) ServeHTTP(ctx *fasthttp.RequestCtx) {
 	s.router.HandleRequest(ctx)
 }
 
+// configureRouter регистрирует middleware и HTML-маршруты локального приложения.
 func (s *server) configureRouter() {
 	s.router.Use(s.setRequestID)
 	s.router.Use(s.logRequest)
@@ -185,7 +228,7 @@ func (s *server) configureRouter() {
 	s.router.Get("/", s.handleHome)
 	s.router.Get("/login", s.handleLogin)
 	s.router.Get("/logout", s.handleLogout)
-	s.router.Get(callbackUri, s.handleCallbackSpotify)
+	s.router.Get(callbackURI, s.handleCallbackSpotify)
 	yaMusic := s.router.Group("/ya_music")
 	//yaMusic.Use(s.authenticateUser)
 	yaMusic.Get("", s.handleYandexMusic)
@@ -198,6 +241,13 @@ func (s *server) configureRouter() {
 	yaMusic.Get("/playlist/<id>/<page>", s.handleSpotifyPlaylist)
 }
 
+// setContentTypeHTML устанавливает HTML Content-Type для ответа и передает управление следующему обработчику.
+//
+// Parameters:
+//   - ctx: контекст запроса роутера.
+//
+// Returns:
+//   - error: ошибка следующего обработчика middleware chain.
 func (s *server) setContentTypeHTML(ctx *routing.Context) error {
 	ctx.Response.Header.Add("Content-Type", "text/html; charset=utf-8")
 	err := ctx.Next()
@@ -207,6 +257,13 @@ func (s *server) setContentTypeHTML(ctx *routing.Context) error {
 	return nil
 }
 
+// setContentTypeJSON устанавливает JSON Content-Type для ответа и передает управление следующему обработчику.
+//
+// Parameters:
+//   - ctx: контекст запроса роутера.
+//
+// Returns:
+//   - error: ошибка следующего обработчика middleware chain.
 func (s *server) setContentTypeJSON(ctx *routing.Context) error {
 	ctx.Response.Header.Set("Content-Type", "application/json; charset=utf-8")
 	err := ctx.Next()
@@ -216,6 +273,13 @@ func (s *server) setContentTypeJSON(ctx *routing.Context) error {
 	return nil
 }
 
+// setAllowedOrigins добавляет CORS-заголовки к ответу и продолжает обработку запроса.
+//
+// Parameters:
+//   - ctx: контекст запроса роутера.
+//
+// Returns:
+//   - error: ошибка следующего обработчика middleware chain.
 func (s *server) setAllowedOrigins(ctx *routing.Context) error {
 	ctx.Response.Header.Set("Access-Control-Allow-Credentials", "true")
 	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
@@ -226,6 +290,13 @@ func (s *server) setAllowedOrigins(ctx *routing.Context) error {
 	return nil
 }
 
+// setRequestID создает request ID, записывает его в заголовок ответа и контекст запроса.
+//
+// Parameters:
+//   - ctx: контекст запроса роутера.
+//
+// Returns:
+//   - error: ошибка следующего обработчика middleware chain.
 func (s *server) setRequestID(ctx *routing.Context) error {
 	id := uuid.New().String()
 	ctx.Response.Header.Set("X-Request-ID", id)
@@ -237,6 +308,13 @@ func (s *server) setRequestID(ctx *routing.Context) error {
 	return nil
 }
 
+// logRequest логирует начало и завершение HTTP-запроса.
+//
+// Parameters:
+//   - ctx: контекст запроса роутера.
+//
+// Returns:
+//   - error: ошибка следующего обработчика middleware chain.
 func (s *server) logRequest(ctx *routing.Context) error {
 	logger := s.logger.WithFields(logrus.Fields{
 		"remote_addr": ctx.RemoteAddr(),
@@ -257,6 +335,18 @@ func (s *server) logRequest(ctx *routing.Context) error {
 	return nil
 }
 
+// handleCallbackSpotify обрабатывает OAuth callback от Spotify и сохраняет авторизованный клиент.
+//
+// Parameters:
+//   - ctx: контекст callback-запроса.
+//
+// Returns:
+//   - error: всегда nil; ошибки записываются в HTTP-ответ через s.error.
+//
+// Cases:
+//   - при ошибке конвертации запроса или token exchange возвращается HTTP 403.
+//   - при несовпадении state возвращается HTTP 404.
+//   - при ошибке получения пользователя возвращается HTTP 422.
 func (s *server) handleCallbackSpotify(ctx *routing.Context) error {
 	var httpRequest http.Request
 	err := fasthttpadaptor.ConvertRequest(ctx.RequestCtx, &httpRequest, false)
@@ -288,6 +378,10 @@ func (s *server) handleCallbackSpotify(ctx *routing.Context) error {
 	return nil
 }
 
+// getHeader собирает верхний HTML-блок с состоянием авторизации и навигацией.
+//
+// Returns:
+//   - string: HTML-фрагмент для вставки на страницы приложения.
 func (s *server) getHeader() string {
 	inLink := "<a href=\"/login\">login</a>"
 	outLink := "<a href=\"/logout\">logout</a>"
@@ -305,6 +399,13 @@ func (s *server) getHeader() string {
 	return page
 }
 
+// handleHome отображает главную страницу локального приложения.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//
+// Returns:
+//   - error: всегда nil.
 func (s *server) handleHome(ctx *routing.Context) error {
 	page := s.getHeader()
 	page += "<br/>You can <a href=\"/ya_music\">import</a> playlist from Yandex.Music"
@@ -312,6 +413,14 @@ func (s *server) handleHome(ctx *routing.Context) error {
 	return nil
 }
 
+// getYandexList собирает HTML-представление импортированного плейлиста и статуса поиска в Spotify.
+//
+// Returns:
+//   - string: HTML-фрагмент со списком треков, счетчиками и доступными действиями.
+//
+// Cases:
+//   - если плейлист еще не импортирован, возвращается пустая строка.
+//   - если поиск завершен, добавляется ссылка на создание Spotify-плейлиста.
 func (s *server) getYandexList() string {
 	list := ""
 	if s.savedPlaylist == nil {
@@ -320,7 +429,7 @@ func (s *server) getYandexList() string {
 	list += fmt.Sprintf("<br><h3>Yandex playlist \"%s\" from %s with playlist_id %d</h3>",
 		s.savedPlaylist.Title,
 		s.savedPlaylist.Owner,
-		s.savedPlaylist.PlaylistId,
+		s.savedPlaylist.PlaylistID,
 	)
 	tracksQuantity := s.quantityOfTracks()
 	if tracksQuantity.yandex == 0 {
@@ -362,9 +471,21 @@ func (s *server) getYandexList() string {
 	return list
 }
 
+// handleYandexMusic отображает форму импорта и загружает плейлист Яндекс Музыки по переданной ссылке.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//
+// Returns:
+//   - error: всегда nil.
+//
+// Cases:
+//   - без import_url показывает форму и текущий импортированный плейлист.
+//   - при успешном импорте сохраняет плейлист в состоянии сервера и перенаправляет на /ya_music.
+//   - при ошибке импорта выводит ошибку на HTML-странице.
 func (s *server) handleYandexMusic(ctx *routing.Context) error {
 	page := s.getHeader()
-	importUrl := string(ctx.QueryArgs().Peek("import_url"))
+	importURL := string(ctx.QueryArgs().Peek("import_url"))
 	page += `
 <form method="get">
 <label>Playlist url: </label>
@@ -373,10 +494,10 @@ func (s *server) handleYandexMusic(ctx *routing.Context) error {
 </form>
 <p><a href="/">Home</a></p>
 `
-	if len(importUrl) > 0 {
+	if len(importURL) > 0 {
 		var err error
-		var playlist *yandex_music.Playlist
-		if playlist, err = yandex_music.NewPlaylistFromLink(importUrl); err == nil && playlist != nil {
+		var playlist *yandexmusic.Playlist
+		if playlist, err = yandexmusic.NewPlaylistFromLink(importURL); err == nil && playlist != nil {
 			err = playlist.GetTracks()
 		}
 		if err != nil {
@@ -395,6 +516,19 @@ func (s *server) handleYandexMusic(ctx *routing.Context) error {
 	return nil
 }
 
+// handleCreatePlaylist создает Spotify-плейлист из найденных треков импортированного плейлиста.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//
+// Returns:
+//   - error: всегда nil.
+//
+// Cases:
+//   - если плейлист Яндекс Музыки не импортирован, перенаправляет на /ya_music.
+//   - без playlist_name показывает форму создания.
+//   - без авторизованного Spotify-пользователя показывает ошибку на странице.
+//   - треки добавляются в Spotify пачками по 100 ID.
 func (s *server) handleCreatePlaylist(ctx *routing.Context) error {
 	if s.savedPlaylist == nil {
 		ctx.Redirect("/ya_music", http.StatusTemporaryRedirect)
@@ -442,22 +576,22 @@ func (s *server) handleCreatePlaylist(ctx *routing.Context) error {
 		s.respond(ctx, http.StatusOK, page)
 		return nil
 	}
-	var trackIds []spotify.ID
+	var trackIDs []spotify.ID
 	for i, foundedTrack := range s.foundedTracks() {
-		trackIds = append(trackIds, foundedTrack.ID)
+		trackIDs = append(trackIDs, foundedTrack.ID)
 		if (i+1)%100 == 0 {
-			_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
+			_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIDs...)
 			if err != nil {
 				s.logger.Errorln(err)
 				page = fmt.Sprintf("<p>%v</p>", err) + page
 				s.respond(ctx, http.StatusOK, page)
 				return nil
 			}
-			trackIds = []spotify.ID{}
+			trackIDs = []spotify.ID{}
 		}
 	}
-	if len(trackIds) > 0 {
-		_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIds...)
+	if len(trackIDs) > 0 {
+		_, err = s.spotifyClient.AddTracksToPlaylist(context.Background(), playlist.ID, trackIDs...)
 		if err != nil {
 			s.logger.Errorln(err)
 			page = fmt.Sprintf("<p>%v</p>", err) + page
@@ -470,6 +604,13 @@ func (s *server) handleCreatePlaylist(ctx *routing.Context) error {
 	return nil
 }
 
+// handleSearchOnSpotify запускает фоновый поиск импортированных треков в Spotify.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//
+// Returns:
+//   - error: всегда nil.
 func (s *server) handleSearchOnSpotify(ctx *routing.Context) error {
 	go s.searchTracksInSpotify()
 	ctx.Redirect("/ya_music", http.StatusTemporaryRedirect)
@@ -478,6 +619,17 @@ func (s *server) handleSearchOnSpotify(ctx *routing.Context) error {
 
 const pageSize = 10
 
+// handleSpotifyPlaylists отображает страницу со списком плейлистов авторизованного Spotify-пользователя.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса; параметр page задает страницу пагинации.
+//
+// Returns:
+//   - error: всегда nil.
+//
+// Cases:
+//   - без авторизации перенаправляет на главную страницу.
+//   - невалидный номер страницы заменяется на 1.
 func (s *server) handleSpotifyPlaylists(ctx *routing.Context) error {
 	page := "<h1>Playlists</h1>"
 	var err error
@@ -527,6 +679,17 @@ func (s *server) handleSpotifyPlaylists(ctx *routing.Context) error {
 	return nil
 }
 
+// handleSpotifyPlaylist отображает треки выбранного Spotify-плейлиста.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса; параметры id и page задают плейлист и страницу.
+//
+// Returns:
+//   - error: всегда nil.
+//
+// Cases:
+//   - без авторизации или id плейлиста перенаправляет на главную страницу.
+//   - невалидный номер страницы заменяется на 1.
 func (s *server) handleSpotifyPlaylist(ctx *routing.Context) error {
 	page := "<h1>Playlist</h1>"
 	var err error
@@ -587,6 +750,17 @@ func (s *server) handleSpotifyPlaylist(ctx *routing.Context) error {
 	return nil
 }
 
+// handleSpotifySaved отображает все сохраненные треки авторизованного Spotify-пользователя.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//
+// Returns:
+//   - error: всегда nil.
+//
+// Cases:
+//   - без авторизации перенаправляет на главную страницу.
+//   - чтение идет постранично до ошибки API или конца списка.
 func (s *server) handleSpotifySaved(ctx *routing.Context) error {
 	page := "<h1>Liked Playlist</h1>"
 	if s.currentUser == nil || s.currentUser.ID == "" {
@@ -628,12 +802,26 @@ func (s *server) handleSpotifySaved(ctx *routing.Context) error {
 	return nil
 }
 
+// handleLogin перенаправляет пользователя на страницу Spotify OAuth.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//
+// Returns:
+//   - error: всегда nil.
 func (s *server) handleLogin(ctx *routing.Context) error {
-	redirectUri := s.auth.AuthURL(s.state)
-	ctx.Redirect(redirectUri, http.StatusTemporaryRedirect)
+	redirectURI := s.auth.AuthURL(s.state)
+	ctx.Redirect(redirectURI, http.StatusTemporaryRedirect)
 	return nil
 }
 
+// handleLogout сбрасывает текущего Spotify-пользователя и клиент в состоянии сервера.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//
+// Returns:
+//   - error: всегда nil.
 func (s *server) handleLogout(ctx *routing.Context) error {
 	s.mClient.Lock()
 	s.currentUser, s.spotifyClient = &spotify.PrivateUser{}, &spotify.Client{}
@@ -642,17 +830,35 @@ func (s *server) handleLogout(ctx *routing.Context) error {
 	return nil
 }
 
+// error отправляет JSON-ответ с текстом ошибки и заданным HTTP-статусом.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//   - code: HTTP-статус ответа.
+//   - err: ошибка для поля "error".
 func (s *server) error(ctx *routing.Context, code int, err error) {
 	resp := map[string]string{"error": err.Error()}
 	marshal, _ := json.Marshal(resp)
 	s.respond(ctx, code, string(marshal))
 }
 
+// respond отправляет строковый ответ с заданным HTTP-статусом.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//   - code: HTTP-статус ответа.
+//   - data: тело ответа.
 func (s *server) respond(ctx *routing.Context, code int, data string) {
 	ctx.SetStatusCode(code)
 	_, _ = ctx.WriteString(data)
 }
 
+// respondJSON кодирует значение в JSON и отправляет его с заданным HTTP-статусом.
+//
+// Parameters:
+//   - ctx: контекст HTTP-запроса.
+//   - code: HTTP-статус ответа.
+//   - data: значение для JSON-кодирования.
 func (s *server) respondJSON(ctx *routing.Context, code int, data any) {
 	ctx.SetStatusCode(code)
 	enc := json.NewEncoder(ctx)

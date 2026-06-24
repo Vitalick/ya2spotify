@@ -1,3 +1,4 @@
+// Package main запускает локальное приложение ya2spotify.
 package main
 
 import (
@@ -5,11 +6,12 @@ import (
 	"fmt"
 	"log"
 
-	"yandexToSpotify/spotify_connect"
+	"ya2spotify/spotifyconnect"
 )
 
+// main запускает локальный веб-сервер для импорта плейлиста Яндекс Музыки в Spotify.
 func main() {
-	//playlistData := yandex_music.NewPlaylist(
+	//playlistData := yandexmusic.NewPlaylist(
 	//	"music-blog",
 	//	2441,
 	//)
@@ -22,7 +24,7 @@ func main() {
 	fmt.Println("Started")
 	flag.Parse()
 
-	if err := spotify_connect.Start(); err != nil {
+	if err := spotifyconnect.Start(); err != nil {
 		log.Fatal(err)
 	}
 }
