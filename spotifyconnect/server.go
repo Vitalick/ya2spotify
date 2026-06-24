@@ -24,6 +24,12 @@ type contextKey string
 
 const requestIDKey contextKey = "requestID"
 
+const (
+	spotifyMaxConcurrentRequests = 4
+	spotifyRequestInterval       = 250 * time.Millisecond
+	spotifyMaxSearchRetries      = 3
+)
+
 type yandexSpotifyTrackIDMap map[string]spotify.FullTrack
 
 type server struct {
@@ -42,6 +48,8 @@ type server struct {
 	mCounter        *sync.Mutex
 	mClient         *sync.Mutex
 	mYandex         *sync.Mutex
+	spotifySlots    chan struct{}
+	spotifyTicks    <-chan time.Time
 	maxThreads      int
 	threadsFinish   []bool
 	nowSearchTrack  int
@@ -69,6 +77,8 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		mCounter:      &sync.Mutex{},
 		mClient:       &sync.Mutex{},
 		mYandex:       &sync.Mutex{},
+		spotifySlots:  make(chan struct{}, spotifyMaxConcurrentRequests),
+		spotifyTicks:  time.Tick(spotifyRequestInterval),
 		maxThreads:    runtime.NumCPU(),
 	}
 	for i := 0; i < s.maxThreads; i++ {
@@ -194,6 +204,79 @@ func (s *server) getTrack() *yandexmusic.SingleTrack {
 	return &playlist.Tracks[s.nowSearchTrack-1]
 }
 
+func (s *server) spotifyClientSnapshot() *spotify.Client {
+	s.mClient.Lock()
+	defer s.mClient.Unlock()
+	return s.spotifyClient
+}
+
+func (s *server) waitSpotifyRequest(ctx context.Context) error {
+	select {
+	case <-s.spotifyTicks:
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
+	select {
+	case s.spotifySlots <- struct{}{}:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (s *server) releaseSpotifyRequest() {
+	<-s.spotifySlots
+}
+
+func (s *server) waitSpotifyRetry(ctx context.Context, err error) bool {
+	var spotifyErr spotify.Error
+	if !errors.As(err, &spotifyErr) || spotifyErr.Status != http.StatusTooManyRequests {
+		return false
+	}
+
+	wait := spotifyRequestInterval
+	if !spotifyErr.RetryAfter.IsZero() {
+		wait = time.Until(spotifyErr.RetryAfter)
+		if wait < 0 {
+			wait = 0
+		}
+	}
+
+	select {
+	case <-time.After(wait):
+		return true
+	case <-ctx.Done():
+		return false
+	}
+}
+
+func (s *server) searchSpotify(ctx context.Context, query string) (*spotify.SearchResult, error) {
+	var lastErr error
+	for attempt := 0; attempt <= spotifyMaxSearchRetries; attempt++ {
+		if err := s.waitSpotifyRequest(ctx); err != nil {
+			return nil, err
+		}
+		res, err := s.spotifyClientSnapshot().Search(ctx, query, spotify.SearchTypeTrack, spotify.Limit(10))
+		s.releaseSpotifyRequest()
+		if err == nil {
+			return res, nil
+		}
+		lastErr = err
+		if !s.waitSpotifyRetry(ctx, err) {
+			return nil, err
+		}
+	}
+	return nil, lastErr
+}
+
+func (s *server) hasSpotifySearchResult(trackID string) bool {
+	s.mMap.Lock()
+	defer s.mMap.Unlock()
+	spotifyTrack := s.yandexSpotify[trackID]
+	return spotifyTrack.ID != ""
+}
+
 // searchTrackInSpotify ищет один трек Яндекс Музыки в Spotify и сохраняет результат в карту соответствий.
 //
 // Parameters:
@@ -207,12 +290,14 @@ func (s *server) searchTrackInSpotify(yt *yandexmusic.SingleTrack) {
 	if len(s.currentUser.ID) == 0 {
 		return
 	}
+	if s.hasSpotifySearchResult(yt.ID) {
+		return
+	}
+
 	var foundTrack spotify.FullTrack
 	for _, artist := range yt.Artists {
 		searchString := strings.Join([]string{yt.Title, artist.String()}, " ")
-		s.mClient.Lock()
-		res, err := s.spotifyClient.Search(ctx, searchString, spotify.SearchTypeTrack, spotify.Limit(10))
-		s.mClient.Unlock()
+		res, err := s.searchSpotify(ctx, searchString)
 		if err != nil {
 			s.logger.Error(err)
 			continue
@@ -270,6 +355,9 @@ func (s *server) searchTracksInSpotify() {
 		go s.searchTracksInSpotifyChan(tracksChan, i)
 	}
 	for _, yt := range playlist.Tracks {
+		if s.hasSpotifySearchResult(yt.ID) {
+			continue
+		}
 		tracksChan <- yt
 	}
 	close(tracksChan)
@@ -400,7 +488,7 @@ func (s *server) handleCallbackSpotify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := spotify.New(s.auth.Client(r.Context(), tok))
+	client := spotify.New(s.auth.Client(r.Context(), tok), spotify.WithRetry(true))
 	s.mClient.Lock()
 	defer s.mClient.Unlock()
 	s.spotifyClient = client
@@ -483,7 +571,10 @@ func (s *server) getYandexList() string {
 			} else {
 				trackString += "Links: "
 				trackString += fmt.Sprintf("<a target=\"blank\" href=\"%s\"><b>App</b></a> | ", spotifyTrack.URI)
-				trackString += fmt.Sprintf("<a target=\"blank\" href=\"%s\"><b>Web</b></a>", strings.Join(strings.Split(string(spotifyTrack.URI), ":")[1:], "/"))
+				trackString += fmt.Sprintf(
+					"<a target=\"blank\" href=\"%s\"><b>Web</b></a>",
+					strings.Join(strings.Split(string(spotifyTrack.URI), ":")[1:], "/"),
+				)
 			}
 		}
 		s.mMap.Unlock()
