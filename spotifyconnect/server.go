@@ -28,6 +28,7 @@ const (
 	spotifyMaxConcurrentRequests = 4
 	spotifyRequestInterval       = 250 * time.Millisecond
 	spotifyMaxSearchRetries      = 3
+	spotifyLibraryBatchSize      = 50
 )
 
 type yandexSpotifyTrackIDMap map[string]spotify.FullTrack
@@ -380,6 +381,7 @@ func (s *server) configureRouter() {
 	s.router.HandleFunc("GET "+callbackURI, s.handleCallbackSpotify)
 	s.router.HandleFunc("GET /ya_music", s.handleYandexMusic)
 	s.router.HandleFunc("GET /ya_music/create_playlist", s.handleCreatePlaylist)
+	s.router.HandleFunc("GET /ya_music/add_to_liked", s.handleAddToLiked)
 	s.router.HandleFunc("GET /ya_music/search", s.handleSearchOnSpotify)
 	s.router.HandleFunc("GET /ya_music/playlists", s.handleSpotifyPlaylists)
 	s.router.HandleFunc("GET /ya_music/playlists/{page}", s.handleSpotifyPlaylists)
@@ -596,6 +598,7 @@ func (s *server) getYandexList() string {
 	if tracksQuantity.foundedSpotify+tracksQuantity.notFoundedSpotify == tracksQuantity.yandex &&
 		tracksQuantity.foundedSpotify > 0 {
 		list += "<h5><a href=\"/ya_music/create_playlist\">Add playlist to Spotify</a></h5>"
+		list += "<h5><a href=\"/ya_music/add_to_liked\">Add tracks to Spotify liked</a></h5>"
 	}
 	list += tracksList
 	return list
@@ -705,6 +708,54 @@ func (s *server) handleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	page = "<p>Success create playlist!</p>" + page
+	s.respond(w, http.StatusOK, page)
+}
+
+// handleAddToLiked добавляет найденные треки Spotify в любимые треки пользователя.
+//
+// Parameters:
+//   - w: HTTP response writer.
+//   - r: HTTP request.
+func (s *server) handleAddToLiked(w http.ResponseWriter, r *http.Request) {
+	if s.yandexPlaylist() == nil {
+		http.Redirect(w, r, "/ya_music", http.StatusTemporaryRedirect)
+		return
+	}
+
+	page := "<p><a href=\"/\">Home</a></p>"
+	page += s.getYandexList()
+
+	if s.currentUser.ID == "" {
+		s.logger.Infoln("not user id")
+		page = "<p>Not user id!</p>" + page
+		s.respond(w, http.StatusOK, page)
+		return
+	}
+
+	foundedTracks := s.foundedTracks()
+	if len(foundedTracks) == 0 {
+		page = "<p>No found tracks to add!</p>" + page
+		s.respond(w, http.StatusOK, page)
+		return
+	}
+
+	trackURIs := make([]spotify.URI, 0, len(foundedTracks))
+	for _, foundedTrack := range foundedTracks {
+		trackURIs = append(trackURIs, foundedTrack.URI)
+	}
+
+	client := s.spotifyClientSnapshot()
+	for start := 0; start < len(trackURIs); start += spotifyLibraryBatchSize {
+		end := min(start+spotifyLibraryBatchSize, len(trackURIs))
+		if err := client.AddItemsToLibrary(r.Context(), trackURIs[start:end]...); err != nil {
+			s.logger.Errorln(err)
+			page = fmt.Sprintf("<p>%v</p>", err) + page
+			s.respond(w, http.StatusOK, page)
+			return
+		}
+	}
+
+	page = "<p>Success add tracks to liked!</p>" + page
 	s.respond(w, http.StatusOK, page)
 }
 
