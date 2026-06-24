@@ -27,21 +27,24 @@ const requestIDKey contextKey = "requestID"
 type yandexSpotifyTrackIDMap map[string]spotify.FullTrack
 
 type server struct {
-	router         *http.ServeMux
-	handler        http.Handler
-	logger         *logrus.Logger
-	auth           *spotifyauth.Authenticator
-	state          string
-	spotifyClient  *spotify.Client
-	currentUser    *spotify.PrivateUser
-	savedPlaylist  *yandexmusic.Playlist
-	yandexSpotify  yandexSpotifyTrackIDMap
-	mMap           *sync.Mutex
-	mCounter       *sync.Mutex
-	mClient        *sync.Mutex
-	maxThreads     int
-	threadsFinish  []bool
-	nowSearchTrack int
+	router          *http.ServeMux
+	handler         http.Handler
+	logger          *logrus.Logger
+	auth            *spotifyauth.Authenticator
+	state           string
+	spotifyClient   *spotify.Client
+	currentUser     *spotify.PrivateUser
+	savedPlaylist   *yandexmusic.Playlist
+	yandexSpotify   yandexSpotifyTrackIDMap
+	yandexImporting bool
+	yandexImportErr error
+	mMap            *sync.Mutex
+	mCounter        *sync.Mutex
+	mClient         *sync.Mutex
+	mYandex         *sync.Mutex
+	maxThreads      int
+	threadsFinish   []bool
+	nowSearchTrack  int
 }
 
 // newServer создает состояние веб-сервера и регистрирует маршруты приложения.
@@ -65,6 +68,7 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		mMap:          &sync.Mutex{},
 		mCounter:      &sync.Mutex{},
 		mClient:       &sync.Mutex{},
+		mYandex:       &sync.Mutex{},
 		maxThreads:    runtime.NumCPU(),
 	}
 	for i := 0; i < s.maxThreads; i++ {
@@ -84,10 +88,15 @@ type tracksQuantity struct {
 // Returns:
 //   - *tracksQuantity: количество исходных, найденных и не найденных в Spotify треков.
 func (s *server) quantityOfTracks() *tracksQuantity {
-	tracksQuantityYandex := len(s.savedPlaylist.Tracks)
+	playlist := s.yandexPlaylist()
+	if playlist == nil {
+		return &tracksQuantity{}
+	}
+
+	tracksQuantityYandex := len(playlist.Tracks)
 	tracksFoundedSpotify := 0
 	tracksNotFoundedSpotify := 0
-	for _, track := range s.savedPlaylist.Tracks {
+	for _, track := range playlist.Tracks {
 		s.mMap.Lock()
 		if spotifyTrack := s.yandexSpotify[track.ID]; spotifyTrack.ID != "" {
 			if spotifyTrack.ID == "nil" {
@@ -106,8 +115,13 @@ func (s *server) quantityOfTracks() *tracksQuantity {
 // Returns:
 //   - []spotify.FullTrack: найденные треки без записей-маркеров "nil".
 func (s *server) foundedTracks() []spotify.FullTrack {
+	playlist := s.yandexPlaylist()
+	if playlist == nil {
+		return nil
+	}
+
 	var foundedTracks []spotify.FullTrack
-	for _, track := range s.savedPlaylist.Tracks {
+	for _, track := range playlist.Tracks {
 		s.mMap.Lock()
 		if spotifyTrack := s.yandexSpotify[track.ID]; spotifyTrack.ID != "" && spotifyTrack.ID != "nil" {
 			foundedTracks = append(foundedTracks, spotifyTrack)
@@ -117,18 +131,67 @@ func (s *server) foundedTracks() []spotify.FullTrack {
 	return foundedTracks
 }
 
+func (s *server) yandexPlaylist() *yandexmusic.Playlist {
+	s.mYandex.Lock()
+	defer s.mYandex.Unlock()
+	return s.savedPlaylist
+}
+
+func (s *server) yandexImportState() (*yandexmusic.Playlist, bool, error) {
+	s.mYandex.Lock()
+	defer s.mYandex.Unlock()
+	return s.savedPlaylist, s.yandexImporting, s.yandexImportErr
+}
+
+func (s *server) startYandexImport(playlist *yandexmusic.Playlist) {
+	s.mYandex.Lock()
+	s.savedPlaylist = nil
+	s.yandexImporting = true
+	s.yandexImportErr = nil
+	s.mYandex.Unlock()
+
+	s.mMap.Lock()
+	s.yandexSpotify = make(yandexSpotifyTrackIDMap)
+	s.mMap.Unlock()
+
+	s.mCounter.Lock()
+	s.nowSearchTrack = 0
+	s.mCounter.Unlock()
+
+	go s.importYandexPlaylist(playlist)
+}
+
+func (s *server) importYandexPlaylist(playlist *yandexmusic.Playlist) {
+	err := playlist.GetTracks()
+
+	s.mYandex.Lock()
+	defer s.mYandex.Unlock()
+	s.yandexImporting = false
+	if err != nil {
+		s.yandexImportErr = err
+		return
+	}
+	s.savedPlaylist = playlist
+	s.yandexImportErr = nil
+}
+
 // getTrack возвращает следующий трек из импортированного плейлиста для потоковой обработки.
 //
 // Returns:
 //   - *yandexmusic.SingleTrack: следующий трек или nil, если треки закончились.
 func (s *server) getTrack() *yandexmusic.SingleTrack {
+	playlist := s.yandexPlaylist()
+	if playlist == nil {
+		return nil
+	}
+
 	s.mCounter.Lock()
 	defer s.mCounter.Unlock()
-	if s.nowSearchTrack >= len(s.savedPlaylist.Tracks) {
+	if s.nowSearchTrack >= len(playlist.Tracks) {
 		return nil
 	}
 	s.nowSearchTrack++
-	return &s.savedPlaylist.Tracks[s.nowSearchTrack-1]
+	return &playlist.Tracks[s.nowSearchTrack-1]
 }
 
 // searchTrackInSpotify ищет один трек Яндекс Музыки в Spotify и сохраняет результат в карту соответствий.
@@ -191,6 +254,10 @@ func (s *server) searchTracksInSpotify() {
 	if len(s.currentUser.ID) == 0 {
 		return
 	}
+	playlist := s.yandexPlaylist()
+	if playlist == nil {
+		return
+	}
 	for _, thread := range s.threadsFinish {
 		if !thread {
 			return
@@ -202,7 +269,7 @@ func (s *server) searchTracksInSpotify() {
 		s.threadsFinish[i] = false
 		go s.searchTracksInSpotifyChan(tracksChan, i)
 	}
-	for _, yt := range s.savedPlaylist.Tracks {
+	for _, yt := range playlist.Tracks {
 		tracksChan <- yt
 	}
 	close(tracksChan)
@@ -386,20 +453,27 @@ func (s *server) handleHome(w http.ResponseWriter, _ *http.Request) {
 //   - если поиск завершен, добавляется ссылка на создание Spotify-плейлиста.
 func (s *server) getYandexList() string {
 	list := ""
-	if s.savedPlaylist == nil {
+	playlist, importing, importErr := s.yandexImportState()
+	if importing {
+		return "<p><strong>Importing Yandex playlist...</strong></p>"
+	}
+	if importErr != nil {
+		return fmt.Sprintf("<p><strong>%v</strong></p>", importErr)
+	}
+	if playlist == nil {
 		return list
 	}
 	list += fmt.Sprintf("<br><h3>Yandex playlist \"%s\" from %s with playlist_id %d</h3>",
-		s.savedPlaylist.Title,
-		s.savedPlaylist.Owner,
-		s.savedPlaylist.PlaylistID,
+		playlist.Title,
+		playlist.Owner,
+		playlist.PlaylistID,
 	)
 	tracksQuantity := s.quantityOfTracks()
 	if tracksQuantity.yandex == 0 {
 		return list
 	}
 	tracksList := "<ol>"
-	for _, track := range s.savedPlaylist.Tracks {
+	for _, track := range playlist.Tracks {
 		tracksList += "<li>"
 		trackString := track.String()
 		s.mMap.Lock()
@@ -407,7 +481,9 @@ func (s *server) getYandexList() string {
 			if spotifyTrack.ID == "nil" {
 				trackString += " <b>Not found in Spotify</b>"
 			} else {
-				trackString += fmt.Sprintf(" <a target=\"blank\" href=\"%s\"><b>Spotify link</b></a>", spotifyTrack.URI)
+				trackString += "Links: "
+				trackString += fmt.Sprintf("<a target=\"blank\" href=\"%s\"><b>App</b></a> | ", spotifyTrack.URI)
+				trackString += fmt.Sprintf("<a target=\"blank\" href=\"%s\"><b>Web</b></a>", strings.Join(strings.Split(string(spotifyTrack.URI), ":")[1:], "/"))
 			}
 		}
 		s.mMap.Unlock()
@@ -453,16 +529,11 @@ func (s *server) handleYandexMusic(w http.ResponseWriter, r *http.Request) {
 	if len(importURL) > 0 {
 		var err error
 		var playlist *yandexmusic.Playlist
-		if playlist, err = yandexmusic.NewPlaylistFromLink(importURL); err == nil && playlist != nil {
-			err = playlist.GetTracks()
-		}
+		playlist, err = yandexmusic.NewPlaylistFromLink(importURL)
 		if err != nil {
 			page += fmt.Sprintf("<p><strong>%v</strong></p>", err)
-		}
-		if err == nil {
-			if playlist != nil {
-				s.savedPlaylist = playlist
-			}
+		} else if playlist != nil {
+			s.startYandexImport(playlist)
 			http.Redirect(w, r, "/ya_music", http.StatusTemporaryRedirect)
 			return
 		}
@@ -477,15 +548,16 @@ func (s *server) handleYandexMusic(w http.ResponseWriter, r *http.Request) {
 //   - w: HTTP response writer.
 //   - r: HTTP request.
 func (s *server) handleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
-	if s.savedPlaylist == nil {
+	yandexPlaylist := s.yandexPlaylist()
+	if yandexPlaylist == nil {
 		http.Redirect(w, r, "/ya_music", http.StatusTemporaryRedirect)
 		return
 	}
 	page := "<form method=\"get\">"
 	page += "<label>New playlist name: </label>"
-	page += fmt.Sprintf("<input type=\"text\" name=\"playlist_name\" value=\"%s\" required>", s.savedPlaylist.Title)
+	page += fmt.Sprintf("<input type=\"text\" name=\"playlist_name\" value=\"%s\" required>", yandexPlaylist.Title)
 	page += "<label>New playlist description: </label>"
-	page += fmt.Sprintf("<input type=\"text\" name=\"playlist_description\" value=\"%s\">", s.savedPlaylist.Description)
+	page += fmt.Sprintf("<input type=\"text\" name=\"playlist_description\" value=\"%s\">", yandexPlaylist.Description)
 	page += "<button type=\"submit\">Create</button>"
 	page += "</form>"
 	page += "<p><a href=\"/\">Home</a></p>"
