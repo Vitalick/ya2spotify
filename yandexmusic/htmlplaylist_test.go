@@ -76,3 +76,36 @@ func TestGetYandexStateOperations(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, "music", data["trackType"])
 }
+
+func TestDecodeYandexStatePlaylist(t *testing.T) {
+	stateFile, err := os.ReadFile("testplaylists/" + playlistID + ".json")
+	require.NoError(t, err)
+
+	var state map[string]any
+	require.NoError(t, json.Unmarshal(stateFile, &state))
+
+	playlist, err := decodeYandexStatePlaylist(state)
+	require.NoError(t, err)
+	assert.Equal(t, playlistID, playlist.UUID)
+	assert.Equal(t, "Змеиный плейлист", playlist.Meta.Title)
+	assert.Equal(t, "music-blog", playlist.Meta.Owner.Login)
+	assert.Equal(t, int64(2324), playlist.Meta.Kind)
+
+	tracks := playlist.TrackEntries()
+	require.Len(t, tracks, 6)
+	assert.Equal(t, "65093274", tracks[0].ID)
+	assert.Equal(t, "На кончике хвоста", tracks[0].Title)
+	require.Len(t, tracks[0].Artists, 1)
+	assert.Equal(t, 9088811, tracks[0].Artists[0].ID)
+	assert.Equal(t, "Снейк Синатра", tracks[0].Artists[0].Name)
+	require.Len(t, tracks[0].Albums, 1)
+	assert.Equal(t, 10509403, tracks[0].Albums[0].ID)
+
+	result := NewPlaylist("", 0)
+	require.NoError(t, result.importYandexState(state))
+	assert.Equal(t, "music-blog", result.Owner)
+	assert.Equal(t, int64(2324), result.PlaylistID)
+	assert.Equal(t, "Змеиный плейлист", result.Title)
+	require.Len(t, result.Tracks, 6)
+	assert.Equal(t, tracks[0], result.Tracks[0])
+}
