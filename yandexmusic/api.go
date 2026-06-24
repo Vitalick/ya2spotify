@@ -1,3 +1,4 @@
+// Package yandexmusic загружает метаданные и треки плейлистов через публичные endpoint'ы Яндекс Музыки.
 package yandexmusic
 
 import "fmt"

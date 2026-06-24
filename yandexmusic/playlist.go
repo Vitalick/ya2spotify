@@ -1,10 +1,10 @@
-// Package yandexmusic загружает метаданные и треки плейлистов через публичные endpoint'ы Яндекс Музыки.
 package yandexmusic
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -17,7 +17,7 @@ type Playlist struct {
 	Title          string        `json:"title"`
 	Description    string        `json:"description"`
 	Tracks         []SingleTrack `json:"tracks"`
-	yandexPlaylist *yandexPlaylistDataOuter
+	yandexPlaylist yandexPlaylistDataOuter
 }
 
 // NewPlaylist создает объект плейлиста Яндекс Музыки по владельцу и идентификатору.
@@ -35,7 +35,7 @@ func NewPlaylist(owner string, playlistID int64) *Playlist {
 		"",
 		"",
 		[]SingleTrack{},
-		&yandexPlaylistDataOuter{},
+		yandexPlaylistDataOuter{},
 	}
 }
 
@@ -109,7 +109,11 @@ func (p *Playlist) GetPlaylistInfo() error {
 	if err != nil {
 		return err
 	}
-	if err := json.NewDecoder(resp.Body).Decode(p.yandexPlaylist); err != nil {
+	bodyStr, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(bodyStr, &p.yandexPlaylist); err != nil {
 		return err
 	}
 	if err := resp.Body.Close(); err != nil {
