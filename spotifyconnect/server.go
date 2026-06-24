@@ -34,26 +34,28 @@ const (
 type yandexSpotifyTrackIDMap map[string]spotify.FullTrack
 
 type server struct {
-	router          *http.ServeMux
-	handler         http.Handler
-	logger          *logrus.Logger
-	auth            *spotifyauth.Authenticator
-	state           string
-	spotifyClient   *spotify.Client
-	currentUser     *spotify.PrivateUser
-	savedPlaylist   *yandexmusic.Playlist
-	yandexSpotify   yandexSpotifyTrackIDMap
-	yandexImporting bool
-	yandexImportErr error
-	mMap            *sync.Mutex
-	mCounter        *sync.Mutex
-	mClient         *sync.Mutex
-	mYandex         *sync.Mutex
-	spotifySlots    chan struct{}
-	spotifyTicks    <-chan time.Time
-	maxThreads      int
-	threadsFinish   []bool
-	nowSearchTrack  int
+	router           *http.ServeMux
+	handler          http.Handler
+	logger           *logrus.Logger
+	auth             *spotifyauth.Authenticator
+	state            string
+	spotifyClient    *spotify.Client
+	currentUser      *spotify.PrivateUser
+	savedPlaylist    *yandexmusic.Playlist
+	yandexSpotify    yandexSpotifyTrackIDMap
+	yandexImporting  bool
+	yandexImportErr  error
+	yandexProgress   yandexmusic.TrackProgress
+	spotifySearching bool
+	mMap             *sync.Mutex
+	mCounter         *sync.Mutex
+	mClient          *sync.Mutex
+	mYandex          *sync.Mutex
+	mSearch          *sync.Mutex
+	spotifySlots     chan struct{}
+	spotifyTicks     <-chan time.Time
+	maxThreads       int
+	nowSearchTrack   int
 }
 
 // newServer создает состояние веб-сервера и регистрирует маршруты приложения.
@@ -78,12 +80,10 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		mCounter:      &sync.Mutex{},
 		mClient:       &sync.Mutex{},
 		mYandex:       &sync.Mutex{},
+		mSearch:       &sync.Mutex{},
 		spotifySlots:  make(chan struct{}, spotifyMaxConcurrentRequests),
 		spotifyTicks:  time.Tick(spotifyRequestInterval),
 		maxThreads:    runtime.NumCPU(),
-	}
-	for i := 0; i < s.maxThreads; i++ {
-		s.threadsFinish = append(s.threadsFinish, true)
 	}
 	s.configureRouter()
 
@@ -148,10 +148,10 @@ func (s *server) yandexPlaylist() *yandexmusic.Playlist {
 	return s.savedPlaylist
 }
 
-func (s *server) yandexImportState() (*yandexmusic.Playlist, bool, error) {
+func (s *server) yandexImportState() (*yandexmusic.Playlist, bool, error, yandexmusic.TrackProgress) {
 	s.mYandex.Lock()
 	defer s.mYandex.Unlock()
-	return s.savedPlaylist, s.yandexImporting, s.yandexImportErr
+	return s.savedPlaylist, s.yandexImporting, s.yandexImportErr, s.yandexProgress
 }
 
 func (s *server) startYandexImport(playlist *yandexmusic.Playlist) {
@@ -159,6 +159,7 @@ func (s *server) startYandexImport(playlist *yandexmusic.Playlist) {
 	s.savedPlaylist = nil
 	s.yandexImporting = true
 	s.yandexImportErr = nil
+	s.yandexProgress = yandexmusic.TrackProgress{}
 	s.mYandex.Unlock()
 
 	s.mMap.Lock()
@@ -169,10 +170,22 @@ func (s *server) startYandexImport(playlist *yandexmusic.Playlist) {
 	s.nowSearchTrack = 0
 	s.mCounter.Unlock()
 
-	go s.importYandexPlaylist(playlist)
+	progress := make(chan yandexmusic.TrackProgress)
+	playlist.Progress = progress
+	go s.watchYandexImportProgress(progress)
+	go s.importYandexPlaylist(playlist, progress)
 }
 
-func (s *server) importYandexPlaylist(playlist *yandexmusic.Playlist) {
+func (s *server) watchYandexImportProgress(progress <-chan yandexmusic.TrackProgress) {
+	for value := range progress {
+		s.mYandex.Lock()
+		s.yandexProgress = value
+		s.mYandex.Unlock()
+	}
+}
+
+func (s *server) importYandexPlaylist(playlist *yandexmusic.Playlist, progress chan yandexmusic.TrackProgress) {
+	defer close(progress)
 	err := playlist.GetTracks()
 
 	s.mYandex.Lock()
@@ -278,6 +291,18 @@ func (s *server) hasSpotifySearchResult(trackID string) bool {
 	return spotifyTrack.ID != ""
 }
 
+func (s *server) setSpotifySearching(searching bool) {
+	s.mSearch.Lock()
+	defer s.mSearch.Unlock()
+	s.spotifySearching = searching
+}
+
+func (s *server) isSpotifySearching() bool {
+	s.mSearch.Lock()
+	defer s.mSearch.Unlock()
+	return s.spotifySearching
+}
+
 // searchTrackInSpotify ищет один трек Яндекс Музыки в Spotify и сохраняет результат в карту соответствий.
 //
 // Parameters:
@@ -321,14 +346,13 @@ func (s *server) searchTrackInSpotify(yt *yandexmusic.SingleTrack) {
 // Parameters:
 //   - tracksChan: канал треков для поиска.
 //   - thread: индекс worker'а в массиве статусов завершения.
-func (s *server) searchTracksInSpotifyChan(tracksChan chan yandexmusic.SingleTrack, thread int) {
+func (s *server) searchTracksInSpotifyChan(tracksChan chan yandexmusic.SingleTrack) {
 	for yt := range tracksChan {
 		if yt.ID == "" {
 			break
 		}
 		s.searchTrackInSpotify(&yt)
 	}
-	s.threadsFinish[thread] = true
 }
 
 // searchTracksInSpotify запускает параллельный поиск всех импортированных треков в Spotify.
@@ -344,16 +368,21 @@ func (s *server) searchTracksInSpotify() {
 	if playlist == nil {
 		return
 	}
-	for _, thread := range s.threadsFinish {
-		if !thread {
-			return
-		}
+	if s.isSpotifySearching() {
+		return
 	}
+	s.setSpotifySearching(true)
+	defer s.setSpotifySearching(false)
+
 	s.nowSearchTrack = 0
 	tracksChan := make(chan yandexmusic.SingleTrack)
+	var wg sync.WaitGroup
 	for i := 0; i < s.maxThreads; i++ {
-		s.threadsFinish[i] = false
-		go s.searchTracksInSpotifyChan(tracksChan, i)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			s.searchTracksInSpotifyChan(tracksChan)
+		}()
 	}
 	for _, yt := range playlist.Tracks {
 		if s.hasSpotifySearchResult(yt.ID) {
@@ -362,6 +391,7 @@ func (s *server) searchTracksInSpotify() {
 		tracksChan <- yt
 	}
 	close(tracksChan)
+	wg.Wait()
 }
 
 // ServeHTTP передает net/http-запрос в роутер приложения.
@@ -543,9 +573,17 @@ func (s *server) handleHome(w http.ResponseWriter, _ *http.Request) {
 //   - если поиск завершен, добавляется ссылка на создание Spotify-плейлиста.
 func (s *server) getYandexList() string {
 	list := ""
-	playlist, importing, importErr := s.yandexImportState()
+	playlist, importing, importErr, progress := s.yandexImportState()
 	if importing {
-		return "<p><strong>Importing Yandex playlist...</strong></p>"
+		if progress.Total == 0 {
+			return "<p><strong>Importing Yandex playlist...</strong></p>"
+		}
+		return fmt.Sprintf(
+			"<p><strong>Importing Yandex playlist...</strong> %d/%d, failed: %d</p>",
+			progress.Done,
+			progress.Total,
+			progress.Failed,
+		)
 	}
 	if importErr != nil {
 		return fmt.Sprintf("<p><strong>%v</strong></p>", importErr)
@@ -586,14 +624,12 @@ func (s *server) getYandexList() string {
 	list += fmt.Sprintf("<h4>Tracks founded on yandex: %d</h4>", tracksQuantity.yandex)
 	list += fmt.Sprintf("<h4>Tracks founded on spotify: %d</h4>", tracksQuantity.foundedSpotify)
 	list += fmt.Sprintf("<h4>Tracks not found on spotify: %d</h4>", tracksQuantity.notFoundedSpotify)
-	threadsFinished := 0
-	for _, finish := range s.threadsFinish {
-		if finish {
-			threadsFinished++
-		}
-	}
-	if threadsFinished == len(s.threadsFinish) {
+	if s.isSpotifySearching() {
+		list += "<p><strong>Searching Spotify...</strong></p>"
+	} else if s.currentUser.ID != "" {
 		list += "<h5><a href=\"/ya_music/search\">Search on Spotify</a></h5>"
+	} else {
+		list += "<p><strong>Login to Spotify to search tracks.</strong></p>"
 	}
 	if tracksQuantity.foundedSpotify+tracksQuantity.notFoundedSpotify == tracksQuantity.yandex &&
 		tracksQuantity.foundedSpotify > 0 {

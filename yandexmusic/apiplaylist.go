@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +19,7 @@ import (
 
 const (
 	yandexTrackIDsBatchSize = 50
+	yandexTracksWorkers     = 4
 	yandexRequestDelay      = 300 * time.Millisecond
 	yandexMaxRetries        = 3
 )
@@ -74,13 +76,22 @@ func (p *Playlist) loadFromYandexAPI() error {
 		return nil
 	}
 
-	tracks, err := fetchYandexTracks(trackIDs, p.PlaylistURL())
+	p.sendProgress(TrackProgress{Total: len(trackIDs)})
+
+	tracks, err := fetchYandexTracks(trackIDs, p.PlaylistURL(), p.Progress)
 	if err != nil {
 		return err
 	}
 	p.Tracks = tracks
 	p.imported = true
 	return nil
+}
+
+func (p *Playlist) sendProgress(progress TrackProgress) {
+	if p.Progress == nil {
+		return
+	}
+	p.Progress <- progress
 }
 
 func (p *Playlist) fetchAPIPlaylist() (yandexAPIPlaylist, error) {
@@ -251,21 +262,89 @@ func (id *yandexAPITrackID) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("unexpected track id value %s", string(data))
 }
 
-func fetchYandexTracks(trackIDs []string, retpath string) ([]SingleTrack, error) {
-	tracks := make([]SingleTrack, 0, len(trackIDs))
-	for start := 0; start < len(trackIDs); start += yandexTrackIDsBatchSize {
-		if start > 0 {
-			time.Sleep(yandexRequestDelay)
-		}
+type yandexTrackBatchJob struct {
+	Index    int
+	TrackIDs []string
+}
 
+type yandexTrackBatchResult struct {
+	Index    int
+	TrackIDs []string
+	Tracks   []SingleTrack
+	Err      error
+}
+
+func fetchYandexTracks(trackIDs []string, retpath string, progress chan<- TrackProgress) ([]SingleTrack, error) {
+	jobs := make([]yandexTrackBatchJob, 0, (len(trackIDs)+yandexTrackIDsBatchSize-1)/yandexTrackIDsBatchSize)
+	for start := 0; start < len(trackIDs); start += yandexTrackIDsBatchSize {
 		end := min(start+yandexTrackIDsBatchSize, len(trackIDs))
-		batch, err := fetchYandexTracksBatch(trackIDs[start:end], retpath)
-		if err != nil {
-			return nil, err
+		jobs = append(jobs, yandexTrackBatchJob{
+			Index:    len(jobs),
+			TrackIDs: trackIDs[start:end],
+		})
+	}
+
+	jobsChan := make(chan yandexTrackBatchJob)
+	resultsChan := make(chan yandexTrackBatchResult)
+	ticks := time.Tick(yandexRequestDelay)
+	var wg sync.WaitGroup
+	for range min(yandexTracksWorkers, len(jobs)) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for job := range jobsChan {
+				<-ticks
+				tracks, err := fetchYandexTracksBatch(job.TrackIDs, retpath)
+				resultsChan <- yandexTrackBatchResult{
+					Index:    job.Index,
+					TrackIDs: job.TrackIDs,
+					Tracks:   tracks,
+					Err:      err,
+				}
+			}
+		}()
+	}
+
+	go func() {
+		for _, job := range jobs {
+			jobsChan <- job
 		}
+		close(jobsChan)
+		wg.Wait()
+		close(resultsChan)
+	}()
+
+	done := 0
+	failed := 0
+	var errList []error
+	results := make([][]SingleTrack, len(jobs))
+	for result := range resultsChan {
+		if result.Err != nil {
+			failed += len(result.TrackIDs)
+			errList = append(errList, result.Err)
+		} else {
+			done += len(result.Tracks)
+			failed += max(0, len(result.TrackIDs)-len(result.Tracks))
+			results[result.Index] = result.Tracks
+		}
+		sendYandexTrackProgress(progress, TrackProgress{Total: len(trackIDs), Done: done, Failed: failed})
+	}
+	if len(errList) > 0 {
+		return nil, errors.Join(errList...)
+	}
+
+	tracks := make([]SingleTrack, 0, len(trackIDs))
+	for _, batch := range results {
 		tracks = append(tracks, batch...)
 	}
 	return tracks, nil
+}
+
+func sendYandexTrackProgress(progress chan<- TrackProgress, value TrackProgress) {
+	if progress == nil {
+		return
+	}
+	progress <- value
 }
 
 func fetchYandexTracksBatch(trackIDs []string, retpath string) ([]SingleTrack, error) {

@@ -17,7 +17,14 @@ type Playlist struct {
 	Title       string        `json:"title"`
 	Description string        `json:"description"`
 	Tracks      []SingleTrack `json:"tracks"`
+	Progress    chan<- TrackProgress
 	imported    bool
+}
+
+type TrackProgress struct {
+	Total  int
+	Done   int
+	Failed int
 }
 
 // NewPlaylist создает объект плейлиста Яндекс Музыки по владельцу и идентификатору.

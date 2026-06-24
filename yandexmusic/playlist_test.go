@@ -153,7 +153,7 @@ func TestFetchYandexTracksBatchesTrackIDs(t *testing.T) {
 		trackIDs = append(trackIDs, strconv.Itoa(i+1))
 	}
 
-	tracks, err := fetchYandexTracks(trackIDs, playlistURL)
+	tracks, err := fetchYandexTracks(trackIDs, playlistURL, nil)
 	require.NoError(t, err)
 	require.Len(t, tracks, yandexTrackIDsBatchSize+1)
 	require.Len(t, requests, 2)
