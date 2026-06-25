@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,14 +24,15 @@ type contextKey string
 const requestIDKey contextKey = "requestID"
 
 const (
-	spotifyMaxConcurrentRequests = 4
+	spotifyMaxConcurrentRequests = 1
 	spotifyRequestInterval       = 250 * time.Millisecond
-	spotifyMaxSearchRetries      = 3
-	spotifySearchTimeout         = 30 * time.Second
+	spotifyMaxSearchRetries      = 2
+	spotifySearchTimeout         = 5 * time.Second
 	spotifyLibraryBatchSize      = 50
 )
 
 type yandexSpotifyTrackIDMap map[string]spotify.FullTrack
+type spotifySearchErrorMap map[string]string
 
 type server struct {
 	router           *http.ServeMux
@@ -44,6 +44,7 @@ type server struct {
 	currentUser      *spotify.PrivateUser
 	savedPlaylist    *yandexmusic.Playlist
 	yandexSpotify    yandexSpotifyTrackIDMap
+	spotifyErrors    spotifySearchErrorMap
 	yandexImporting  bool
 	yandexImportErr  error
 	yandexProgress   yandexmusic.TrackProgress
@@ -77,6 +78,7 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		currentUser:   &spotify.PrivateUser{},
 		savedPlaylist: nil,
 		yandexSpotify: make(yandexSpotifyTrackIDMap),
+		spotifyErrors: make(spotifySearchErrorMap),
 		mMap:          &sync.Mutex{},
 		mCounter:      &sync.Mutex{},
 		mClient:       &sync.Mutex{},
@@ -84,7 +86,7 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 		mSearch:       &sync.Mutex{},
 		spotifySlots:  make(chan struct{}, spotifyMaxConcurrentRequests),
 		spotifyTicks:  time.Tick(spotifyRequestInterval),
-		maxThreads:    runtime.NumCPU(),
+		maxThreads:    1,
 	}
 	s.configureRouter()
 
@@ -92,7 +94,7 @@ func newServer(auth *spotifyauth.Authenticator, state string) *server {
 }
 
 type tracksQuantity struct {
-	yandex, foundedSpotify, notFoundedSpotify int
+	yandex, foundedSpotify, notFoundedSpotify, errorSpotify int
 }
 
 // quantityOfTracks считает треки Яндекс Музыки и результаты их поиска в Spotify.
@@ -108,6 +110,7 @@ func (s *server) quantityOfTracks() *tracksQuantity {
 	tracksQuantityYandex := len(playlist.Tracks)
 	tracksFoundedSpotify := 0
 	tracksNotFoundedSpotify := 0
+	tracksErrorSpotify := 0
 	for _, track := range playlist.Tracks {
 		s.mMap.Lock()
 		if spotifyTrack := s.yandexSpotify[track.ID]; spotifyTrack.ID != "" {
@@ -116,10 +119,12 @@ func (s *server) quantityOfTracks() *tracksQuantity {
 			} else {
 				tracksFoundedSpotify++
 			}
+		} else if s.spotifyErrors[track.ID] != "" {
+			tracksErrorSpotify++
 		}
 		s.mMap.Unlock()
 	}
-	return &tracksQuantity{tracksQuantityYandex, tracksFoundedSpotify, tracksNotFoundedSpotify}
+	return &tracksQuantity{tracksQuantityYandex, tracksFoundedSpotify, tracksNotFoundedSpotify, tracksErrorSpotify}
 }
 
 // foundedTracks собирает найденные в Spotify треки для добавления в новый плейлист.
@@ -165,6 +170,7 @@ func (s *server) startYandexImport(playlist *yandexmusic.Playlist) {
 
 	s.mMap.Lock()
 	s.yandexSpotify = make(yandexSpotifyTrackIDMap)
+	s.spotifyErrors = make(spotifySearchErrorMap)
 	s.mMap.Unlock()
 
 	s.mCounter.Lock()
@@ -292,6 +298,34 @@ func (s *server) hasSpotifySearchResult(trackID string) bool {
 	return spotifyTrack.ID != ""
 }
 
+func (s *server) clearSpotifyTrackError(trackID string) {
+	s.mMap.Lock()
+	defer s.mMap.Unlock()
+	delete(s.spotifyErrors, trackID)
+}
+
+func (s *server) setSpotifyTrackResult(trackID string, spotifyTrack spotify.FullTrack) {
+	s.mMap.Lock()
+	defer s.mMap.Unlock()
+	s.yandexSpotify[trackID] = spotifyTrack
+	delete(s.spotifyErrors, trackID)
+}
+
+func (s *server) setSpotifyTrackError(trackID string, err error) {
+	s.mMap.Lock()
+	defer s.mMap.Unlock()
+	delete(s.yandexSpotify, trackID)
+	s.spotifyErrors[trackID] = spotifySearchErrorText(err)
+}
+
+func spotifySearchErrorText(err error) string {
+	var spotifyErr spotify.Error
+	if errors.As(err, &spotifyErr) && spotifyErr.Status != 0 {
+		return fmt.Sprintf("%s [%d]", spotifyErr.Message, spotifyErr.Status)
+	}
+	return err.Error()
+}
+
 func (s *server) setSpotifySearching(searching bool) {
 	s.mSearch.Lock()
 	defer s.mSearch.Unlock()
@@ -329,31 +363,41 @@ func (s *server) searchTrackInSpotify(yt *yandexmusic.SingleTrack) {
 	if s.hasSpotifySearchResult(yt.ID) {
 		return
 	}
+	s.clearSpotifyTrackError(yt.ID)
 
 	var foundTrack spotify.FullTrack
+	var lastErr error
+	hasSuccessfulSearch := false
 	for _, artist := range yt.Artists {
 		searchString := strings.Join([]string{yt.Title, artist.String()}, " ")
 		ctx, cancel := context.WithTimeout(context.Background(), spotifySearchTimeout)
 		res, err := s.searchSpotify(ctx, searchString)
 		cancel()
 		if err != nil {
+			lastErr = err
 			s.logger.Error(err)
 			continue
 		}
+		hasSuccessfulSearch = true
 		if tracks := res.Tracks.Tracks; len(tracks) > 0 {
 			foundTrack = tracks[0]
 			break
 		}
 	}
-	if len(foundTrack.ID) == 0 {
+	if len(foundTrack.ID) != 0 {
+		s.logger.Infof("spotify search result: yandex track %s -> spotify track %s", yt.ID, foundTrack.ID)
+		s.setSpotifyTrackResult(yt.ID, foundTrack)
+		return
+	}
+
+	if hasSuccessfulSearch || lastErr == nil {
 		foundTrack = spotify.FullTrack{SimpleTrack: spotify.SimpleTrack{ID: "nil"}}
 		s.logger.Infof("spotify search result: yandex track %s not found", yt.ID)
+		s.setSpotifyTrackResult(yt.ID, foundTrack)
 	} else {
-		s.logger.Infof("spotify search result: yandex track %s -> spotify track %s", yt.ID, foundTrack.ID)
+		s.logger.Infof("spotify search result: yandex track %s error: %v", yt.ID, lastErr)
+		s.setSpotifyTrackError(yt.ID, lastErr)
 	}
-	s.mMap.Lock()
-	s.yandexSpotify[yt.ID] = foundTrack
-	s.mMap.Unlock()
 }
 
 // searchTracksInSpotifyChan обрабатывает треки из канала в отдельном worker'е поиска.
@@ -645,6 +689,8 @@ func (s *server) getYandexList() string {
 					strings.Join(strings.Split(string(spotifyTrack.URI), ":")[1:], "/"),
 				)
 			}
+		} else if searchErr := s.spotifyErrors[track.ID]; searchErr != "" {
+			trackString += fmt.Sprintf(" <b>Error: %s</b>", searchErr)
 		}
 		s.mMap.Unlock()
 		tracksList += trackString + "</li>"
@@ -653,6 +699,7 @@ func (s *server) getYandexList() string {
 	list += fmt.Sprintf("<h4>Tracks founded on yandex: %d</h4>", tracksQuantity.yandex)
 	list += fmt.Sprintf("<h4>Tracks founded on spotify: %d</h4>", tracksQuantity.foundedSpotify)
 	list += fmt.Sprintf("<h4>Tracks not found on spotify: %d</h4>", tracksQuantity.notFoundedSpotify)
+	list += fmt.Sprintf("<h4>Tracks with spotify search errors: %d</h4>", tracksQuantity.errorSpotify)
 	if s.isSpotifySearching() {
 		list += "<p><strong>Searching Spotify...</strong></p>"
 	} else if s.currentUser.ID != "" {
@@ -901,7 +948,7 @@ func (s *server) handleSpotifyPlaylist(w http.ResponseWriter, r *http.Request) {
 	page += fmt.Sprintf("<h2>ID %s</h2>", idStr)
 	page += fmt.Sprintf("<h2>Page %d</h2>", pageNum)
 	page += "<div>"
-	playlist, err := s.spotifyClient.GetPlaylistTracks(
+	playlist, err := s.spotifyClient.GetPlaylistItems(
 		r.Context(),
 		spotify.ID(idStr),
 		spotify.Limit(100),
@@ -914,13 +961,17 @@ func (s *server) handleSpotifyPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	page += "<ul>"
-	for _, track := range playlist.Tracks {
+	for _, item := range playlist.Items {
+		if item.Track.Track == nil {
+			continue
+		}
+		track := item.Track.Track
 		page += "<li>"
-		artists := make([]string, len(track.Track.Artists))
-		for i, art := range track.Track.Artists {
+		artists := make([]string, len(track.Artists))
+		for i, art := range track.Artists {
 			artists[i] = art.Name
 		}
-		page += fmt.Sprintf("%s - %s", strings.Join(artists, ", "), track.Track.Name)
+		page += fmt.Sprintf("%s - %s", strings.Join(artists, ", "), track.Name)
 		page += "</li>"
 	}
 	page += "</ul>"
@@ -929,7 +980,7 @@ func (s *server) handleSpotifyPlaylist(w http.ResponseWriter, r *http.Request) {
 	if pageNum > 1 {
 		page += fmt.Sprintf(`<a href="/ya_music/playlist/%s/%d">Prev</a>`, idStr, pageNum-1)
 	}
-	if 100*(pageNum-1)+len(playlist.Tracks) < int(playlist.Total) {
+	if 100*(pageNum-1)+len(playlist.Items) < int(playlist.Total) {
 		page += fmt.Sprintf(`<a href="/ya_music/playlist/%s/%d">Next</a>`, idStr, pageNum+1)
 	}
 	page += "</div>"
